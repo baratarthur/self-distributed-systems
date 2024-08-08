@@ -1,0 +1,19 @@
+uses net.TCPSocket
+uses server.GenericServer
+
+data ParsedRequest {
+    Request request
+    opt Data d[]
+}
+
+data ParsedResponse {
+    ResponsePart res
+    opt Data d[]
+}
+
+interface RCPUtil {
+    Response make(Request r, opt Data d[], opt Type responseType)
+    char[] receiveData(TCPSocket s)
+    ParsedRequest parseRequest(char requestChar[], opt Type t)
+    ParsedResponse parseResponse(char responseChar[], opt Type t)
+}

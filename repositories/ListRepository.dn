@@ -1,0 +1,32 @@
+const char debugMSG[] = "[@ListRepository]"
+
+component provides repositories.ListRepository requires data.IntUtil iu, io.Output out {
+    Node list[]
+
+    void ListRepository:add(store Node n) {
+        list = new Node[](list, n)
+    }
+
+    void ListRepository:remove(Node n) {
+        Node tempList[] = new Node[]()
+        for (int p = 0;p < list.arrayLength; p++) {
+            if(n.id != list[p].id) tempList = new Node[](tempList, list[p])
+        }
+        list = tempList
+    }
+
+    Node[] ListRepository:getAll() {
+        return list
+    }
+
+    char[] ListRepository:getString() {
+        char aux[] = null
+        for(int p = 0;p<list.arrayLength;p++) {
+            char stringHost[] = new char[]("$(list[p].content.title): $(list[p].content.post)\n")
+            aux = new char[](aux, stringHost)
+        }
+        if (aux != null) out.println("$debugMSG - all nodes id - $aux")
+        out.println("$debugMSG - list")
+        return aux
+    }
+}

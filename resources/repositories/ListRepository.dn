@@ -1,0 +1,16 @@
+data Node {
+    int id
+    Post content
+}
+
+data Post {
+    char title[]
+    char post[]
+}
+
+interface ListRepository {
+    void add(store Node n)
+    void remove(Node n)
+    Node[] getAll()
+    char[] getString()
+}

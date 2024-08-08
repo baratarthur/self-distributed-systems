@@ -1,0 +1,9 @@
+uses server.Server
+uses http.HTTPUtil
+
+interface ListController {
+    Response handle(HTTPMessage request)
+    Response handleGet(HTTPMessage request)
+    Response handleGetAll(HTTPMessage request)
+    Response handlePost(HTTPMessage request)
+}

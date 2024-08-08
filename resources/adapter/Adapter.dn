@@ -1,0 +1,4 @@
+
+interface Adapter {
+    void adaptTo(opt char repositoryComponentPath[])
+}

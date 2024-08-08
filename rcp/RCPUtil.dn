@@ -1,0 +1,77 @@
+const char debugMSG[] = "[@RCPUtil]"
+
+component provides RCPUtil requires data.json.JSONEncoder je, net.TCPSocket, server.GenericServer,
+    io.Output out, data.IntUtil iu, data.StringUtil su, Constants {
+    Response res = null
+
+    Response RCPUtil:make(Request req, opt Data d[], opt Type resposeType) {
+        TCPSocket s = new TCPSocket()
+        if(s.connect(req.addr.host, req.addr.port)) {
+            char requestContent[] = null
+
+            if (isset d) {
+                requestContent = new char[](je.jsonFromData(req), Constants.SEPARATOR, je.jsonFromArray(d))
+            } else {
+                requestContent = je.jsonFromData(req)
+            }
+            
+            requestContent = new char[](requestContent, Constants.EOF)
+            s.send(requestContent)
+            char responseContent[] = receiveData(s)
+            out.println("$debugMSG - data received - $responseContent")
+            ParsedResponse pr = parseResponse(responseContent, typeof(Node[]))
+            res = new Response(pr.res.status, pr.d)
+            s.disconnect()
+        }
+        return res
+    }
+    
+    ParsedRequest RCPUtil:parseRequest(char requestChar[], opt Type t) {
+        ParsedRequest r = null
+        String json[] = su.explode(requestChar, Constants.SEPARATOR)
+        out.println("$debugMSG - json length - $(json.arrayLength)")
+
+        if(json.arrayLength > 1) {
+            Request req = je.jsonToData(json[0].string, typeof(Request))
+            Data params[] = je.jsonToArray(json[1].string, t)
+            out.println("$debugMSG - params - $(je.jsonFromArray(params))")
+            r = new ParsedRequest(req, params)
+        } else {
+            r = new ParsedRequest(je.jsonToData(requestChar, typeof(Request)))
+        }
+        return r
+    }
+
+    ParsedResponse RCPUtil:parseResponse(char responseChar[], opt Type t) {
+        ParsedResponse r = null
+        String json[] = su.explode(responseChar, Constants.SEPARATOR)
+        out.println("$debugMSG - json length - $(json.arrayLength)")
+
+        if(json.arrayLength > 1) {
+            ResponsePart response = je.jsonToData(json[0].string, typeof(ResponsePart))
+            Data params[] = je.jsonToArray(json[1].string, t)
+            out.println("$debugMSG - params - $(je.jsonFromArray(params))")
+            r = new ParsedResponse(response, params)
+        } else {
+            r = new ParsedResponse(je.jsonToData(responseChar, typeof(ResponsePart)))
+        }
+        return r
+    }
+
+    bool isArray(char value[]) {
+        return su.startsWith(value, "[") && su.endsWith(value, "]")
+    }
+
+    char[] RCPUtil:receiveData(TCPSocket s) {
+        char buf[] = null
+        char body[] = null
+		int stopCounter = 0
+        while ((buf = s.recv(1)).arrayLength > 0) {
+            body = new char[](body, buf)
+			if(buf == "\r") stopCounter++
+			else stopCounter = 0
+			if(body.arrayLength >= 4 && stopCounter == 4) break
+		}
+        return su.rtrim(body)
+    }
+}

@@ -1,0 +1,9 @@
+
+interface Constants {
+    const char ADD[] = "add"
+    const char REMOVE[] = "remove"
+    const char GET[] = "get"
+    const char GET_OBJ[] = "get_all"
+    const char SEPARATOR[] = "\r\r!\r\r"
+    const char EOF[] = "\r\r\r\r"
+}

@@ -1,0 +1,42 @@
+uses Constants
+
+const char debugMSG[] = "[@ListRepositoryProxy]"
+
+component provides repositories.ListRepository requires data.IntUtil iu,
+    io.Output out, server.GenericServer, rcp.RCPUtil rcp, data.json.JSONEncoder je {
+    Address remoteAddress = new Address("localhost", 8081)
+
+    void ListRepository:add(store Node n) {
+        Request req = new Request(remoteAddress, Constants.ADD)
+        rcp.make(req, new Node[](n))
+    }
+
+    void ListRepository:remove(Node n) {
+        Request req = new Request(remoteAddress, Constants.REMOVE)
+        rcp.make(req, new Node[](n))
+    }
+
+    Node[] ListRepository:getAll() {
+        Request req = new Request(remoteAddress, Constants.GET_OBJ)
+        Response res = rcp.make(req)
+        out.println("$debugMSG - response content - $(je.jsonFromArray(res.content))")
+        Node n[] = res.content
+        return n
+    }
+
+    char[] ListRepository:getString() {
+        Request req = new Request(remoteAddress, Constants.GET_OBJ)
+        Response res = rcp.make(req)
+        if(res == null) return ""
+        char acc[] = new char[]()
+        for(int i = 0;i < res.content.arrayLength; i++) {
+            Node n = res.content[i]
+            acc = new char[](
+                acc,
+                "$(n.id): $(n.content.title) - $(n.content.post)",
+                "\n"
+            )
+        }
+        return acc
+    }
+}

@@ -1,0 +1,93 @@
+uses server.ListController
+
+const char debugMSG[] = "[@Server]"
+
+component provides server.Server requires io.Output out, http.HTTPUtil httpUtil, data.IntUtil iu,
+    net.TCPServerSocket, net.TCPSocket, composition.Adapt adapter, composition.RecursiveLoader loader  {
+    bool adaptation = false
+    ListController lc
+
+    void Server:init() {
+        TCPServerSocket host = new TCPServerSocket()
+        int port = 8080
+
+        adaptTo()
+        
+        // binding server socket
+		if (!host.bind(TCPServerSocket.ANY_ADDRESS, port)) {
+			out.println("Error: failed to bind master socket")
+			return
+		}
+
+        out.println("")
+        out.println("$debugMSG - Server is up and running...")
+        out.print("option> ")
+
+		// handling incoming requests
+		while (true) {
+			TCPSocket client = new TCPSocket()
+			if (client.accept(host)) handleRequest(client)
+		}
+    }
+
+    void Server:adaptTo(opt char repositoryComponentPath[]) {
+        LoadedComponents listRepository
+        LoadedComponents listController = loader.load("server/ListController.o")
+
+        if(isset repositoryComponentPath) listRepository = loader.load(repositoryComponentPath)
+        else listRepository = loader.load("repositories/ListRepository.o")
+
+        out.println("$debugMSG - repo - $repositoryComponentPath")
+        
+        listController.mainComponent.wire("repositories.ListRepository", listRepository.mainComponent, "repositories.ListRepository")
+        lc = new ListController() from listController.mainComponent
+        adapter.adaptRequiredInterface(listController.mainComponent, "repositories.ListRepository", listRepository.mainComponent)
+    }
+
+    void Server:handleRequest(store TCPSocket client) {
+        out.println("")
+        out.println("============= REQUEST START ===========")
+        HTTPMessage msg = httpUtil.readHTTPRequest(client)
+        process(msg)
+        out.println("============= REQUEST END   ===========")
+        out.print("option> ")
+    }
+    
+    void Server:process(HTTPMessage request) {
+        Response res = null
+        res = lc.handle(request)
+        if (res != null) sendResponse(request, res)
+        else sendResponse(request, build404(request))
+    }
+
+    Response build404(HTTPMessage request) {
+        return new Response(
+            404,
+            "Not Found",
+            HTTPUtil.SERVER_NAME,
+            0,
+            request.mimeType,
+            ""
+        )
+    }
+
+    void Server:sendResponse(HTTPMessage request, Response response) {
+        // out.println("$debugMSG - RESPONSE CONTENT")
+        request.socket.send("HTTP/1.1 $(iu.makeString(response.code)) $(response.status)\r\n")
+        // out.print("HTTP/1.1 $(iu.makeString(response.code)) $(response.status)\r\n")
+		request.socket.send("Server: $(response.serverName) \r\n")
+        // out.print("Server: $(response.serverName) \r\n")
+		request.socket.send("Content-Length: $(iu.makeString(response.contentLength))\r\n")
+        // out.print("Content-Length: $(iu.makeString(response.contentLength))\r\n")
+		request.socket.send("Connection: close\r\n")
+        // out.print("Connection: close\r\n")
+		request.socket.send("Content-Type: $(response.contentType)\r\n")
+        // out.print("Content-Type: $(response.contentType)\r\n")
+		request.socket.send("\r\n")
+        // out.print("\r\n")
+		request.socket.send(response.body)
+        // out.println(response.body)
+        // out.println("$debugMSG - END RESPONSE CONTENT")
+    }
+
+}

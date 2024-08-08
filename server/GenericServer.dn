@@ -1,0 +1,63 @@
+uses Constants
+
+const char debugMSG[] = "[@GenericServer]"
+
+component provides server.GenericServer requires net.TCPSocket, net.TCPServerSocket,
+    io.Output out, data.IntUtil iu,  data.json.JSONEncoder je, data.StringUtil su,
+    rcp.RCPUtil rcp, repositories.ListRepository listRepository {
+    bool serviceStatus = false
+    TCPServerSocket host
+    
+    void GenericServer:start(int PORT) {
+        host = new TCPServerSocket()
+        serviceStatus = true
+        
+        if (!host.bind(TCPServerSocket.ANY_ADDRESS, PORT)) {
+			out.println("Error: failed to bind master socket")
+			return
+		}
+
+        out.println("$debugMSG - Server started on port $(iu.makeString(PORT))")
+
+        while (serviceStatus) {
+			TCPSocket client = new TCPSocket()
+			if (client.accept(host)) { asynch::handleRequest(client) }
+		}
+    }
+
+    void GenericServer:handleRequest(TCPSocket s) {
+        char requestContent[] = rcp.receiveData(s)
+        if(requestContent == null) s.disconnect()
+        out.println("$debugMSG - content - $requestContent")
+        ParsedRequest p = rcp.parseRequest(requestContent, typeof(Node[]))
+        Response res = process(p)
+        char response[] = new char[](
+            je.jsonFromData(new ResponsePart(res.status)),
+            Constants.SEPARATOR,
+            je.jsonFromArray(res.content),
+            Constants.EOF
+        )
+        out.println("$debugMSG - response - $response")
+        s.send(response)
+        s.disconnect()
+    }
+
+    Response process(ParsedRequest pr) {
+        if(pr.request.functionName == Constants.ADD) {
+            Node newNode = pr.d[0]
+            listRepository.add(newNode)
+            return new Response(1, null)
+        } else if(pr.request.functionName == Constants.GET) {
+            char responseBody[] = listRepository.getString()
+            return new Response(1, new String(responseBody))
+        } else if(pr.request.functionName == Constants.GET_OBJ) {
+            return new Response(1, listRepository.getAll())
+        }
+
+        return new Response(2, new String("Method not found"))
+    }
+
+    bool isDangerousChar(char value) {
+        return value == "[" || value == "]" || value == "{" || value == "}" || value == "\""
+    }
+}
