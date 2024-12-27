@@ -1,0 +1,23 @@
+{
+	"output_folder": "./repositories",
+    "dependencies": [
+        { "lib": "rcp.RCPUtil", "alias": "connection" },
+        { "lib": "data.IntUtil", "alias": "iu" },
+        { "lib": "server.GenericServer", "alias": null }
+    ],
+    "remotes": [
+        { "address": "localhost", "port": 8081 }
+    ],
+    "attributes": {
+        "content": {
+            "type": "INT",
+            "strategy": "broadcast"
+        }
+    },
+	"methods": {
+        "get": {
+            "operation": "read",
+            "uses": ["content"]
+        }
+    }
+}

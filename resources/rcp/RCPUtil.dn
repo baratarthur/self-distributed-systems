@@ -3,12 +3,12 @@ uses server.GenericServer
 
 data ParsedRequest {
     Request request
-    opt Data d[]
+    Data d[]
 }
 
 data ParsedResponse {
     ResponsePart res
-    opt Data d[]
+    Data d[]
 }
 
 interface RCPUtil {
