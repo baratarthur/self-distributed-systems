@@ -1,0 +1,4 @@
+uses server.GenericServer
+
+component provides repositories.ListRepository requires rcp.RCPUtil connection, data.IntUtil iu {
+}

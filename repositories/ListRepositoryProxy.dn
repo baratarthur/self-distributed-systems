@@ -2,8 +2,7 @@ uses Constants
 
 const char debugMSG[] = "[@ListRepositoryProxy]"
 
-component provides repositories.ListRepository requires data.IntUtil iu,
-    io.Output out, server.GenericServer, rcp.RCPUtil rcp, data.json.JSONEncoder je {
+component provides repositories.ListRepository requires data.IntUtil iu, server.GenericServer, rcp.RCPUtil rcp {
     Address remoteAddress = new Address("localhost", 8081)
 
     void ListRepository:add(store Node n) {
@@ -19,7 +18,6 @@ component provides repositories.ListRepository requires data.IntUtil iu,
     Node[] ListRepository:getAll() {
         Request req = new Request(remoteAddress, Constants.GET_OBJ)
         Response res = rcp.make(req)
-        out.println("$debugMSG - response content - $(je.jsonFromArray(res.content))")
         Node n[] = res.content
         return n
     }

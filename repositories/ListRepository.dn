@@ -1,6 +1,6 @@
 const char debugMSG[] = "[@ListRepository]"
 
-component provides repositories.ListRepository requires data.IntUtil iu, io.Output out {
+component provides repositories.ListRepository requires io.Output out {
     Node list[]
 
     void ListRepository:add(store Node n) {
