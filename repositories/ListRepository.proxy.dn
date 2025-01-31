@@ -1,4 +1,33 @@
-uses server.GenericServer
 
 component provides repositories.ListRepository requires rcp.RCPUtil connection, data.IntUtil iu {
+	Address remotes[] = new Address[](new Address("localhost", 8081))
+
+	void ListRepository:add (store Node node) {
+		Request req0 = new Request(buildMetaForMethod("add"), node)
+		broadcastWrite(req0)
+	}
+
+	Node[] ListRepository:getAll () {
+		Request req0 = new Request(buildMetaForMethod("getAll"))
+		Response res = broadcastRead(req0, typeof(Node[]))
+		return res.d
+	}
+
+	Metadata[] buildMetaForMethod(char method[]) {
+		Metadata metaMethod = new Metadata("method", method)
+		return new Metadata[](metaMethod)
+	}
+
+	void broadcastWrite(Request r) {
+		for(int i = 0; i < remotes.arrayLength; i++) {
+			connection.connect(remotes[i])
+			connection.make(r)
+		}
+	}
+
+	Response broadcastRead(Request r, Type responseBodyType) {
+		connection.connect(remotes[0])
+		return connection.make(r, responseBodyType)
+	}
+
 }

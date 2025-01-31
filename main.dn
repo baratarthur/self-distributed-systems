@@ -13,7 +13,7 @@ component provides App requires server.Server server, io.Input in, io.Output out
         } else if (option == 1) {
             server.adaptTo()
         } else if (option == 2) {
-            server.adaptTo("repositories/ListRepositoryProxy.o")
+            server.adaptTo("repositories/ListRepository.proxy.o")
         } else {
             out.println("Nao deu bom $option")
         }

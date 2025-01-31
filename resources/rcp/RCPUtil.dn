@@ -1,19 +1,34 @@
 uses net.TCPSocket
-uses server.GenericServer
 
-data ParsedRequest {
-    Request request
-    Data d[]
+data Address {
+    char name[]
+    int port
 }
 
-data ParsedResponse {
-    ResponsePart res
+data Metadata {
+    char name[]
+    char value[]
+}
+
+data TransactionData {
+    char name[]
+    char value[]
+}
+
+data Request {
+    Metadata meta[]
+    Data d
+}
+
+data Response {
+    Metadata meta[]
     Data d[]
 }
 
 interface RCPUtil {
-    Response make(Request r, opt Data d[], opt Type responseType)
+    bool connect(Address a)
+    Response make(Request r, opt Type responseType)
+    Request parseRequestFromString(char requestString[], opt Type t)
     char[] receiveData(TCPSocket s)
-    ParsedRequest parseRequest(char requestChar[], opt Type t)
-    ParsedResponse parseResponse(char responseChar[], opt Type t)
+    char[] buildRawResponse(Response r)
 }
