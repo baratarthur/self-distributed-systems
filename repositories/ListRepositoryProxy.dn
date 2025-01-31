@@ -2,39 +2,36 @@ uses Constants
 
 const char debugMSG[] = "[@ListRepositoryProxy]"
 
-component provides repositories.ListRepository requires data.IntUtil iu, server.GenericServer, rcp.RCPUtil rcp {
-    Address remoteAddress = new Address("localhost", 8081)
+component provides repositories.ListRepository requires data.IntUtil iu, rcp.RCPUtil rcp {
+    Address remoteAddress[] = new Address[](new Address("localhost", 8081))
 
     void ListRepository:add(store Node n) {
-        Request req = new Request(remoteAddress, Constants.ADD)
-        rcp.make(req, new Node[](n))
-    }
-
-    void ListRepository:remove(Node n) {
-        Request req = new Request(remoteAddress, Constants.REMOVE)
-        rcp.make(req, new Node[](n))
+        Request req = new Request(buildMetaForMethod(Constants.ADD), n)
+        broadcastWrite(req)
     }
 
     Node[] ListRepository:getAll() {
-        Request req = new Request(remoteAddress, Constants.GET_OBJ)
-        Response res = rcp.make(req)
-        Node n[] = res.content
-        return n
+        Request req = new Request(buildMetaForMethod(Constants.GET))
+        Response res = broadcastRead(req, typeof(Node[]))
+        Node nodes[] = res.d
+        return nodes
     }
 
-    char[] ListRepository:getString() {
-        Request req = new Request(remoteAddress, Constants.GET_OBJ)
-        Response res = rcp.make(req)
-        if(res == null) return ""
-        char acc[] = new char[]()
-        for(int i = 0;i < res.content.arrayLength; i++) {
-            Node n = res.content[i]
-            acc = new char[](
-                acc,
-                "$(n.id): $(n.content.title) - $(n.content.post)",
-                "\n"
-            )
-        }
-        return acc
+    Metadata[] buildMetaForMethod(char method[]) {
+        Metadata metaMethod = new Metadata("method", method)
+        return new Metadata[](metaMethod)
     }
+
+    void broadcastWrite(Request r) {
+        for(int i = 0; i < remoteAddress.arrayLength; i++) {
+            rcp.connect(remoteAddress[i])
+            rcp.make(r)
+        }
+    }
+
+    Response broadcastRead(Request r, Type responseBodyType) {
+        rcp.connect(remoteAddress[0])
+        return rcp.make(r, responseBodyType)
+    }
+
 }

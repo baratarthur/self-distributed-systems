@@ -29,35 +29,51 @@ component provides server.GenericServer requires net.TCPSocket, net.TCPServerSoc
         char requestContent[] = rcp.receiveData(s)
         if(requestContent == null) s.disconnect()
         out.println("$debugMSG - content - $requestContent")
-        ParsedRequest p = rcp.parseRequest(requestContent, typeof(Node[]))
-        Response res = process(p)
-        char response[] = new char[](
-            je.jsonFromData(new ResponsePart(res.status)),
-            Constants.SEPARATOR,
-            je.jsonFromArray(res.content),
-            Constants.EOF
-        )
-        out.println("$debugMSG - response - $response")
-        s.send(response)
+        Request req = rcp.parseRequestFromString(requestContent, typeof(Node))
+        Response res = process(req)
+        char rawResponse[] = rcp.buildRawResponse(res)
+        out.println("$debugMSG - response - $rawResponse")
+        s.send(rawResponse)
         s.disconnect()
     }
 
-    Response process(ParsedRequest pr) {
-        if(pr.request.functionName == Constants.ADD) {
-            Node newNode = pr.d[0]
+    Response process(Request req) {
+        char method[] = getMethodFromMetadata(req.meta)
+        if(method == "add") {
+            Node newNode = req.d
             listRepository.add(newNode)
-            return new Response(1, null)
-        } else if(pr.request.functionName == Constants.GET) {
-            char responseBody[] = listRepository.getString()
-            return new Response(1, new String(responseBody))
-        } else if(pr.request.functionName == Constants.GET_OBJ) {
-            return new Response(1, listRepository.getAll())
+            return buildResponseWithoutData("add", "200")
+        }
+        else if(method == "getAll") {
+            return buildResponseWithData(listRepository.getAll(), "Node[]", Constants.GET, "200")
         }
 
-        return new Response(2, new String("Method not found"))
+        return buildResponseWithoutData(method, "404")
     }
 
-    bool isDangerousChar(char value) {
-        return value == "[" || value == "]" || value == "{" || value == "}" || value == "\""
+    char[] getMethodFromMetadata(Metadata meta[]) {
+        for(int i =0; i < meta.arrayLength; i++) {
+            if(meta[i].name == "method") return meta[i].value
+        }
+
+        return ""
+    }
+
+    Response buildResponseWithData(Data d[], char dataType[], char method[], char status[]) {
+        return new Response(buildMetaForMethod(method, status, dataType), d)
+    }
+
+    Response buildResponseWithoutData(char method[], char status[]) {
+        return new Response(buildMetaForMethod(method, status), null)
+    }
+
+    Metadata[] buildMetaForMethod(char method[], char status[], opt char dataType[]) {
+        Metadata metaMethod = new Metadata("method", method)
+        Metadata transactionStatus = new Metadata("status", status)
+        if(isset dataType) {
+            Metadata metaDataType = new Metadata("data-type", dataType)
+            return new Metadata[](metaMethod, metaDataType, transactionStatus)
+        }
+        return new Metadata[](metaMethod, transactionStatus)
     }
 }

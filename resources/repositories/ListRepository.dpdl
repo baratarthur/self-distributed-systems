@@ -2,22 +2,29 @@
 	"output_folder": "./repositories",
     "dependencies": [
         { "lib": "rcp.RCPUtil", "alias": "connection" },
-        { "lib": "data.IntUtil", "alias": "iu" },
-        { "lib": "server.GenericServer", "alias": null }
+        { "lib": "data.IntUtil", "alias": "iu" }
     ],
     "remotes": [
         { "address": "localhost", "port": 8081 }
     ],
     "attributes": {
-        "content": {
-            "type": "INT",
+        "list": {
+            "type": "Node[]",
             "strategy": "broadcast"
         }
     },
 	"methods": {
-        "get": {
-            "operation": "read",
-            "uses": ["content"]
+        "add": {
+            "returnType": "void",
+            "arguments": [
+                {"name": "node", "type": "Node", "store": true, "connectsTo": "list"}
+            ],
+            "operation": "write"
+        },
+        "getAll": {
+            "returnType": "Node[]",
+            "connectsTo": "list",
+            "operation": "read"
         }
     }
 }
