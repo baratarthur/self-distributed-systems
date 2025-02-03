@@ -4,7 +4,7 @@ const char debugMSG[] = "[@GenericServer]"
 
 component provides server.GenericServer requires net.TCPSocket, net.TCPServerSocket,
     io.Output out, data.IntUtil iu,  data.json.JSONEncoder je, data.StringUtil su,
-    rcp.RCPUtil rcp, repositories.ListRepository listRepository {
+    rpc.RPCUtil rpc, repositories.ListRepository listRepository {
     bool serviceStatus = false
     TCPServerSocket host
     
@@ -26,12 +26,12 @@ component provides server.GenericServer requires net.TCPSocket, net.TCPServerSoc
     }
 
     void GenericServer:handleRequest(TCPSocket s) {
-        char requestContent[] = rcp.receiveData(s)
+        char requestContent[] = rpc.receiveData(s)
         if(requestContent == null) s.disconnect()
         out.println("$debugMSG - content - $requestContent")
-        Request req = rcp.parseRequestFromString(requestContent, typeof(Node))
+        Request req = rpc.parseRequestFromString(requestContent, typeof(Node))
         Response res = process(req)
-        char rawResponse[] = rcp.buildRawResponse(res)
+        char rawResponse[] = rpc.buildRawResponse(res)
         out.println("$debugMSG - response - $rawResponse")
         s.send(rawResponse)
         s.disconnect()

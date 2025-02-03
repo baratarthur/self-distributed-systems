@@ -6,25 +6,6 @@ data Param {
     char key[]
 }
 
-// data Address {
-//     char host[]
-//     int port
-// }
-
-// data Request {
-//     Address addr
-//     char functionName[]
-// }
-
-// data Response {
-//     byte status // 1 - OK | 2 - Failed
-//     Data content[] // null - no content | char[] - some content
-// }
-
-// data ResponsePart {
-//     byte status
-// }
-
 interface GenericServer {
     void start(int port)
     void handleRequest(TCPSocket s)
