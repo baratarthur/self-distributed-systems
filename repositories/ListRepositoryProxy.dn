@@ -2,7 +2,7 @@ uses Constants
 
 const char debugMSG[] = "[@ListRepositoryProxy]"
 
-component provides repositories.ListRepository requires data.IntUtil iu, rcp.RCPUtil rcp {
+component provides repositories.ListRepository requires data.IntUtil iu, rpc.RPCUtil rpc {
     Address remoteAddress[] = new Address[](new Address("localhost", 8081))
 
     void ListRepository:add(store Node n) {
@@ -24,14 +24,14 @@ component provides repositories.ListRepository requires data.IntUtil iu, rcp.RCP
 
     void broadcastWrite(Request r) {
         for(int i = 0; i < remoteAddress.arrayLength; i++) {
-            rcp.connect(remoteAddress[i])
-            rcp.make(r)
+            rpc.connect(remoteAddress[i])
+            rpc.make(r)
         }
     }
 
     Response broadcastRead(Request r, Type responseBodyType) {
-        rcp.connect(remoteAddress[0])
-        return rcp.make(r, responseBodyType)
+        rpc.connect(remoteAddress[0])
+        return rpc.make(r, responseBodyType)
     }
 
 }

@@ -1,15 +1,15 @@
-const char debugMSG[] = "[@RCPUtil]"
+const char debugMSG[] = "[@RPCUtil]"
 
-component provides RCPUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
+component provides RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
     data.IntUtil iu, data.StringUtil su, Constants {
     TCPSocket connectionSocket = null
 
-    bool RCPUtil:connect(Address a) {
+    bool RPCUtil:connect(Address a) {
         connectionSocket = new TCPSocket()
         return connectionSocket.connect(a.name, a.port)
     }
 
-    Response RCPUtil:make(Request req, opt Type responseType) {
+    Response RPCUtil:make(Request req, opt Type responseType) {
         Response r = null
         char requestContent[] = null
 
@@ -39,7 +39,7 @@ component provides RCPUtil requires data.json.JSONEncoder je, net.TCPSocket, io.
         return r
     }
 
-    char[] RCPUtil:receiveData(TCPSocket s) {
+    char[] RPCUtil:receiveData(TCPSocket s) {
         char buf[] = null
         char body[] = null
 		int stopCounter = 0
@@ -53,7 +53,7 @@ component provides RCPUtil requires data.json.JSONEncoder je, net.TCPSocket, io.
     }
 
     
-    Request RCPUtil:parseRequestFromString(char requestString[], opt Type dataType) {
+    Request RPCUtil:parseRequestFromString(char requestString[], opt Type dataType) {
         Request r = null
         String json[] = su.explode(requestString, Constants.SEPARATOR)
         Metadata meta[] = je.jsonToArray(json[0].string, typeof(Metadata[]))
@@ -69,45 +69,9 @@ component provides RCPUtil requires data.json.JSONEncoder je, net.TCPSocket, io.
     }
 
     
-    char[] RCPUtil:buildRawResponse(Response res) {
+    char[] RPCUtil:buildRawResponse(Response res) {
         if(res.d == null) return new char[](je.jsonFromArray(res.meta), Constants.EOF)
         else return new char[](je.jsonFromArray(res.meta), Constants.SEPARATOR, je.jsonFromArray(res.d), Constants.EOF)
     }
-    
-    // ParsedRequest RCPUtil:parseRequest(char requestChar[], opt Type t) {
-    //     ParsedRequest r = null
-    //     String json[] = su.explode(requestChar, Constants.SEPARATOR)
-    //     out.println("$debugMSG - json length - $(json.arrayLength)")
-
-    //     if(json.arrayLength > 1) {
-    //         Request req = je.jsonToData(json[0].string, typeof(Request))
-    //         Data params[] = je.jsonToArray(json[1].string, t)
-    //         out.println("$debugMSG - params - $(je.jsonFromArray(params))")
-    //         r = new ParsedRequest(req, params)
-    //     } else {
-    //         r = new ParsedRequest(je.jsonToData(requestChar, typeof(Request)))
-    //     }
-    //     return r
-    // }
-
-    // ParsedResponse RCPUtil:parseResponse(char responseChar[], opt Type t) {
-    //     ParsedResponse r = null
-    //     String json[] = su.explode(responseChar, Constants.SEPARATOR)
-    //     out.println("$debugMSG - json length - $(json.arrayLength)")
-
-    //     if(json.arrayLength > 1) {
-    //         ResponsePart response = je.jsonToData(json[0].string, typeof(ResponsePart))
-    //         Data params[] = je.jsonToArray(json[1].string, t)
-    //         out.println("$debugMSG - params - $(je.jsonFromArray(params))")
-    //         r = new ParsedResponse(response, params)
-    //     } else {
-    //         r = new ParsedResponse(je.jsonToData(responseChar, typeof(ResponsePart)))
-    //     }
-    //     return r
-    // }
-
-    // bool isArray(char value[]) {
-    //     return su.startsWith(value, "[") && su.endsWith(value, "]")
-    // }
 
 }

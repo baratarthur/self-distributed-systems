@@ -25,7 +25,7 @@ data Response {
     Data d[]
 }
 
-interface RCPUtil {
+interface RPCUtil {
     bool connect(Address a)
     Response make(Request r, opt Type responseType)
     Request parseRequestFromString(char requestString[], opt Type t)
