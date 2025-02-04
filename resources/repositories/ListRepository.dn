@@ -9,6 +9,8 @@ data Post {
 }
 
 interface ListRepository {
+    transfer Node list[]
+
     void add(store Node n)
     Node[] getAll()
 }

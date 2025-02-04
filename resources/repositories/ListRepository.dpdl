@@ -17,7 +17,12 @@
         "add": {
             "returnType": "void",
             "arguments": [
-                {"name": "node", "type": "Node", "store": true, "connectsTo": "list"}
+                {
+                    "name": "node",
+                    "type": "Node",
+                    "store": true,
+                    "connectsTo": "list"
+                }
             ],
             "operation": "write"
         },

@@ -6,12 +6,16 @@ component provides server.Server requires io.Output out, http.HTTPUtil httpUtil,
     net.TCPServerSocket, net.TCPSocket, composition.Adapt adapter, composition.RecursiveLoader loader  {
     bool adaptation = false
     ListController lc
+    LoadedComponents listRepository = loader.load("repositories/ListRepository.o")
+    LoadedComponents listRepositoryProxy = loader.load("repositories/ListRepository.proxy.o")
+    LoadedComponents listController = loader.load("server/ListController.o")
 
     void Server:init() {
         TCPServerSocket host = new TCPServerSocket()
         int port = 8080
 
-        adaptTo()
+        listController.mainComponent.wire("repositories.ListRepository", listRepository.mainComponent, "repositories.ListRepository")
+        lc = new ListController() from listController.mainComponent
         
         // binding server socket
 		if (!host.bind(TCPServerSocket.ANY_ADDRESS, port)) {
@@ -30,18 +34,10 @@ component provides server.Server requires io.Output out, http.HTTPUtil httpUtil,
 		}
     }
 
-    void Server:adaptTo(opt char repositoryComponentPath[]) {
-        LoadedComponents listRepository
-        LoadedComponents listController = loader.load("server/ListController.o")
-
-        if(isset repositoryComponentPath) listRepository = loader.load(repositoryComponentPath)
-        else listRepository = loader.load("repositories/ListRepository.o")
-
-        out.println("$debugMSG - repo - $repositoryComponentPath")
-        
-        listController.mainComponent.wire("repositories.ListRepository", listRepository.mainComponent, "repositories.ListRepository")
-        lc = new ListController() from listController.mainComponent
-        adapter.adaptRequiredInterface(listController.mainComponent, "repositories.ListRepository", listRepository.mainComponent)
+    void Server:adaptRepository(opt bool useProxy) {
+        if(isset useProxy && useProxy)
+            adapter.adaptRequiredInterface(listController.mainComponent, "repositories.ListRepository", listRepositoryProxy.mainComponent)
+        else adapter.adaptRequiredInterface(listController.mainComponent, "repositories.ListRepository", listRepository.mainComponent)
     }
 
     void Server:handleRequest(store TCPSocket client) {
