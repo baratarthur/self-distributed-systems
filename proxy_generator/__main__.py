@@ -1,8 +1,9 @@
 import os
 from config import DpdlReader
 from header.generator import HeaderGenerator
-from strategy.generator import StrategyGenerator
 from methods.generator import MethodsGenerator
+from strategy.generator import StrategyGenerator
+from adaptation.generator import AdaptationGenerator
 
 IDL_EXTENSION = "dpdl"
 
@@ -33,6 +34,7 @@ for dpdl_filepath in idl_resources:
         ComponentHeader = HeaderGenerator(interface_filepath, dpdl_config.dependencies, dpdl_config.remotes)
         ComponentMethods = MethodsGenerator(dpdl_config.methods, ComponentHeader.get_interface_name(), dpdl_config.attributes)
         ComponentStrategyAndFooter = StrategyGenerator(strategies)
+        ComponentAdaptation = AdaptationGenerator()
 
         with open(output_file_path, "w") as out_file:
             ComponentHeader.provide_component_header(out_file)
@@ -40,3 +42,6 @@ for dpdl_filepath in idl_resources:
             ComponentMethods.provide_method_implementation(out_file)
             out_file.write("\n")
             ComponentStrategyAndFooter.provide_strategy(out_file)
+            out_file.write("\n")
+            ComponentAdaptation.provide_daptation(out_file)
+            out_file.write("}\n") # close component scope

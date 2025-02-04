@@ -11,9 +11,9 @@ component provides App requires server.Server server, io.Input in, io.Output out
         if (option == 0) {
             server.init()
         } else if (option == 1) {
-            server.adaptTo()
+            server.adaptRepository()
         } else if (option == 2) {
-            server.adaptTo("repositories/ListRepository.proxy.o")
+            server.adaptRepository(true)
         } else {
             out.println("Nao deu bom $option")
         }

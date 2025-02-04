@@ -12,7 +12,7 @@ class HeaderGenerator:
     def provide_component_header(self, file):
         file.write(self.general_dependencies)
         file.write("\n")
-        file.write(f"component provides {self.name} {self.get_component_definition()}" + " {\n")
+        file.write(f"component provides {self.name}(AdaptEvents) {self.get_component_definition()}" + " {\n")
         file.write(self.provide_component_resources())
 
     def get_component_definition(self) -> str:

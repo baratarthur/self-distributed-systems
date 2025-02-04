@@ -1,5 +1,5 @@
 
-component provides repositories.ListRepository requires rpc.RPCUtil connection, data.IntUtil iu {
+component provides repositories.ListRepository(AdaptEvents) requires rpc.RPCUtil connection, data.IntUtil iu {
 	Address remotes[] = new Address[](new Address("localhost", 8081))
 
 	void ListRepository:add (store Node node) {
@@ -30,4 +30,9 @@ component provides repositories.ListRepository requires rpc.RPCUtil connection, 
 		return connection.make(r, responseBodyType)
 	}
 
+	void AdaptEvents:active() {
+	}
+
+	void AdaptEvents:inactive() {
+	}
 }

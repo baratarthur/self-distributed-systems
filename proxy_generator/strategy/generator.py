@@ -26,9 +26,3 @@ class StrategyGenerator():
                 file.write("\tResponse {}(Request r, Type responseBodyType) ".format(read_strategy_method_name) + "{\n")
                 file.write(STRATEGIES_CODE[strategy]["read"])
                 file.write("\t}\n")
-
-                file.write("\n")
-
-        
-        file.write("}\n") # finish iplementation
- 

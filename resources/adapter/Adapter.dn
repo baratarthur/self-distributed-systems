@@ -1,4 +1,4 @@
 
 interface Adapter {
-    void adaptTo(opt char repositoryComponentPath[])
+    void adaptRepository(opt bool useProxy)
 }
