@@ -3,7 +3,8 @@ uses server.ListController
 const char debugMSG[] = "[@Server]"
 
 component provides server.Server requires io.Output out, http.HTTPUtil httpUtil, data.IntUtil iu,
-    net.TCPServerSocket, net.TCPSocket, composition.Adapt adapter, composition.RecursiveLoader loader  {
+    net.TCPServerSocket, net.TCPSocket, composition.Adapt adapter, composition.RecursiveLoader loader,
+    monitoring.ResponseTime rt {
     bool adaptation = false
     ListController lc
     LoadedComponents listRepository = loader.load("repositories/ListRepository.o")
@@ -35,17 +36,25 @@ component provides server.Server requires io.Output out, http.HTTPUtil httpUtil,
     }
 
     void Server:adaptRepository(opt bool useProxy) {
+        rt.markStartTime()
         if(isset useProxy && useProxy)
             adapter.adaptRequiredInterface(listController.mainComponent, "repositories.ListRepository", listRepositoryProxy.mainComponent)
         else adapter.adaptRequiredInterface(listController.mainComponent, "repositories.ListRepository", listRepository.mainComponent)
+        rt.markFinishTime()
+        out.println("[SERVER] - adaptation time: $(iu.makeString(rt.getResult()))")
+        rt.clearTime()
     }
 
     void Server:handleRequest(store TCPSocket client) {
         out.println("")
         out.println("============= REQUEST START ===========")
         HTTPMessage msg = httpUtil.readHTTPRequest(client)
+        rt.markStartTime()
         process(msg)
+        rt.markFinishTime()
         out.println("============= REQUEST END   ===========")
+        out.println("[SERVER] - response time: $(iu.makeString(rt.getResult()))")
+        rt.clearTime()
         out.print("option> ")
     }
     
