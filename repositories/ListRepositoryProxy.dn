@@ -6,12 +6,17 @@ component provides repositories.ListRepository(AdaptEvents) requires data.IntUti
     Address remoteAddress[] = new Address[](new Address("localhost", 8081))
 
     void ListRepository:add(store Node n) {
-        Request req = new Request(buildMetaForMethod(Constants.ADD), n)
+        Request req = new Request(buildMetaForMethod("add"), n)
+        broadcastWrite(req)
+    }
+
+    void ListRepository:clear() {
+        Request req = new Request(buildMetaForMethod("clear"))
         broadcastWrite(req)
     }
 
     Node[] ListRepository:getAll() {
-        Request req = new Request(buildMetaForMethod(Constants.GET))
+        Request req = new Request(buildMetaForMethod("getAll"))
         Response res = broadcastRead(req, typeof(Node[]))
         Node nodes[] = res.d
         return nodes
@@ -42,6 +47,7 @@ component provides repositories.ListRepository(AdaptEvents) requires data.IntUti
 
 	void AdaptEvents:inactive() {
 		list = getAll()
+        clear()
 	}
 
 }

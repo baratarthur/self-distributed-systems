@@ -45,7 +45,11 @@ component provides server.GenericServer requires net.TCPSocket, net.TCPServerSoc
             return buildResponseWithoutData("add", "200")
         }
         else if(method == "getAll") {
-            return buildResponseWithData(listRepository.getAll(), "Node[]", Constants.GET, "200")
+            return buildResponseWithData(listRepository.getAll(), "Node[]", "getAll", "200")
+        }
+        else if(method == "clear") {
+            listRepository.clear()
+            return buildResponseWithoutData("clear", "200")
         }
 
         return buildResponseWithoutData(method, "404")
