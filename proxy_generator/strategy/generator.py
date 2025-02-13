@@ -2,7 +2,7 @@ STRATEGIES_CODE = {
     "broadcast": {
         "write": """\t\tfor(int i = 0; i < remotes.arrayLength; i++) {\n\t\t\tconnection.connect(remotes[i])\n\t\t\tconnection.make(r)\n\t\t}\n""",
         "read": """\t\tconnection.connect(remotes[0])\n\t\treturn connection.make(r, responseBodyType)\n"""
-    }
+    },
 }
 
 class StrategyGenerator():

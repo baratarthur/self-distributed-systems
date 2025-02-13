@@ -34,7 +34,7 @@ for dpdl_filepath in idl_resources:
         ComponentHeader = HeaderGenerator(interface_filepath, dpdl_config.dependencies, dpdl_config.remotes)
         ComponentMethods = MethodsGenerator(dpdl_config.methods, ComponentHeader.get_interface_name(), dpdl_config.attributes)
         ComponentStrategyAndFooter = StrategyGenerator(strategies)
-        ComponentAdaptation = AdaptationGenerator()
+        ComponentAdaptation = AdaptationGenerator(dpdl_config.on_active, dpdl_config.on_inactive)
 
         with open(output_file_path, "w") as out_file:
             ComponentHeader.provide_component_header(out_file)

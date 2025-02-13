@@ -5,6 +5,10 @@ component provides repositories.ListRepository requires io.Output out {
         list = new Node[](list, n)
     }
 
+    void ListRepository:clear() {
+        list = new Node[]()
+    }
+
     Node[] ListRepository:getAll() {
         return list
     }

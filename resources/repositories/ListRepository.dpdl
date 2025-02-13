@@ -30,6 +30,18 @@
             "returnType": "Node[]",
             "connectsTo": "list",
             "operation": "read"
+        },
+        "clear": {
+            "returnType": "void",
+            "connectsTo": "list",
+            "operation": "write"
         }
-    }
+    },
+    "onActive": [
+        {"call": "add", "forEachElementIn": "list"}
+    ],
+    "onInactive": [
+        {"assignTo": "list", "value": "getAll()"},
+        {"call": "clear"}
+    ]
 }

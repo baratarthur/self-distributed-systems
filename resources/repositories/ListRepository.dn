@@ -12,5 +12,6 @@ interface ListRepository {
     transfer Node list[]
 
     void add(store Node n)
+    void clear()
     Node[] getAll()
 }
