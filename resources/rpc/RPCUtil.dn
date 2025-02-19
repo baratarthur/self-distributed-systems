@@ -17,18 +17,18 @@ data TransactionData {
 
 data Request {
     Metadata meta[]
-    Data d
+    char content[]
 }
 
 data Response {
     Metadata meta[]
-    Data d[]
+    char content[]
 }
 
 interface RPCUtil {
     bool connect(Address a)
-    Response make(Request r, opt Type responseType)
-    Request parseRequestFromString(char requestString[], opt Type t)
+    Response make(Request r)
+    Request parseRequestFromString(char requestString[])
     char[] receiveData(TCPSocket s)
     char[] buildRawResponse(Response r)
 }

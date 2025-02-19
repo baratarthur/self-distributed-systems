@@ -17,7 +17,7 @@ component provides server.ListController requires io.Output out, repositories.Li
     }
 
     Response ListController:handleGet(HTTPMessage request) {
-        out.println("$debugMSG - get")
+        out.println("$debugMSG - get size - $(iu.makeString(listRepository.size()))")
         return buildResponseCode200("test", request.mimeType)
     }
 

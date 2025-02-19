@@ -2,11 +2,11 @@ uses Constants
 
 const char debugMSG[] = "[@ListRepositoryProxy]"
 
-component provides repositories.ListRepository(AdaptEvents) requires data.IntUtil iu, rpc.RPCUtil rpc {
+component provides repositories.ListRepository(AdaptEvents) requires data.IntUtil iu, rpc.RPCUtil rpc, data.json.JSONEncoder je {
     Address remoteAddress[] = new Address[](new Address("localhost", 8081))
 
     void ListRepository:add(store Node n) {
-        Request req = new Request(buildMetaForMethod("add"), n)
+        Request req = new Request(buildMetaForMethod("add"), je.jsonFromData(n))
         broadcastWrite(req)
     }
 
@@ -17,9 +17,15 @@ component provides repositories.ListRepository(AdaptEvents) requires data.IntUti
 
     Node[] ListRepository:getAll() {
         Request req = new Request(buildMetaForMethod("getAll"))
-        Response res = broadcastRead(req, typeof(Node[]))
-        Node nodes[] = res.d
+        Response res = broadcastRead(req)
+        Node nodes[] = je.jsonToArray(res.content, typeof(Node[]))
         return nodes
+    }
+
+    int ListRepository:size() {
+        Request req = new Request(buildMetaForMethod("size"))
+        Response res = broadcastRead(req)
+        return iu.intFromString(res.content)
     }
 
     Metadata[] buildMetaForMethod(char method[]) {
@@ -34,9 +40,9 @@ component provides repositories.ListRepository(AdaptEvents) requires data.IntUti
         }
     }
 
-    Response broadcastRead(Request r, Type responseBodyType) {
+    Response broadcastRead(Request r) {
         rpc.connect(remoteAddress[0])
-        return rpc.make(r, responseBodyType)
+        return rpc.make(r)
     }
 
     void AdaptEvents:active() {
@@ -47,6 +53,7 @@ component provides repositories.ListRepository(AdaptEvents) requires data.IntUti
 
 	void AdaptEvents:inactive() {
 		list = getAll()
+        index = size()
         clear()
 	}
 

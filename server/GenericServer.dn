@@ -29,7 +29,7 @@ component provides server.GenericServer requires net.TCPSocket, net.TCPServerSoc
         char requestContent[] = rpc.receiveData(s)
         if(requestContent == null) s.disconnect()
         out.println("$debugMSG - content - $requestContent")
-        Request req = rpc.parseRequestFromString(requestContent, typeof(Node))
+        Request req = rpc.parseRequestFromString(requestContent)
         Response res = process(req)
         char rawResponse[] = rpc.buildRawResponse(res)
         out.println("$debugMSG - response - $rawResponse")
@@ -40,16 +40,28 @@ component provides server.GenericServer requires net.TCPSocket, net.TCPServerSoc
     Response process(Request req) {
         char method[] = getMethodFromMetadata(req.meta)
         if(method == "add") {
-            Node newNode = req.d
+            Node newNode = je.jsonToData(req.content, typeof(Node))
             listRepository.add(newNode)
             return buildResponseWithoutData("add", "200")
         }
         else if(method == "getAll") {
-            return buildResponseWithData(listRepository.getAll(), "Node[]", "getAll", "200")
+            return buildResponseWithData(
+                je.jsonFromArray(listRepository.getAll()),
+                "Node[]",
+                "getAll",
+                "200"
+            )
         }
         else if(method == "clear") {
             listRepository.clear()
             return buildResponseWithoutData("clear", "200")
+        } else if(method == "size") {
+            return buildResponseWithData(
+                iu.makeString(listRepository.size()),
+                "int",
+                "size",
+                "200"
+            )
         }
 
         return buildResponseWithoutData(method, "404")
@@ -63,12 +75,12 @@ component provides server.GenericServer requires net.TCPSocket, net.TCPServerSoc
         return ""
     }
 
-    Response buildResponseWithData(Data d[], char dataType[], char method[], char status[]) {
-        return new Response(buildMetaForMethod(method, status, dataType), d)
+    Response buildResponseWithData(char content[], char dataType[], char method[], char status[]) {
+        return new Response(buildMetaForMethod(method, status, dataType), content)
     }
 
     Response buildResponseWithoutData(char method[], char status[]) {
-        return new Response(buildMetaForMethod(method, status), null)
+        return new Response(buildMetaForMethod(method, status))
     }
 
     Metadata[] buildMetaForMethod(char method[], char status[], opt char dataType[]) {

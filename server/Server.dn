@@ -24,8 +24,7 @@ component provides server.Server requires io.Output out, http.HTTPUtil httpUtil,
 			return
 		}
 
-        out.println("")
-        out.println("$debugMSG - Server is up and running...")
+        out.println("\n$debugMSG - Server is up and running...")
         out.print("option> ")
 
 		// handling incoming requests
@@ -46,14 +45,13 @@ component provides server.Server requires io.Output out, http.HTTPUtil httpUtil,
     }
 
     void Server:handleRequest(store TCPSocket client) {
-        out.println("")
-        out.println("============= REQUEST START ===========")
+        out.println("\n============= REQUEST START ===========")
         HTTPMessage msg = httpUtil.readHTTPRequest(client)
         rt.markStartTime()
         process(msg)
         rt.markFinishTime()
-        out.println("============= REQUEST END   ===========")
         out.println("[SERVER] - response time: $(iu.makeString(rt.getResult()))")
+        out.println("============= REQUEST END   ===========")
         rt.clearTime()
         out.print("option> ")
     }
