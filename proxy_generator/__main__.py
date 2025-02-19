@@ -29,7 +29,7 @@ for dpdl_filepath in idl_resources:
         file_name = dpdl_filepath.split("/")[-1].replace(".dpdl", ".proxy.dn")
         output_file_path = f"{dpdl_config.output_folder}/{file_name}"
 
-        strategies = [dpdl_config.attributes[attr]['strategy'] for attr in dpdl_config.attributes]
+        strategies = {dpdl_config.attributes[attr]['strategy'] for attr in dpdl_config.attributes}
 
         ComponentHeader = HeaderGenerator(interface_filepath, dpdl_config.dependencies, dpdl_config.remotes)
         ComponentMethods = MethodsGenerator(dpdl_config.methods, ComponentHeader.get_interface_name(), dpdl_config.attributes)

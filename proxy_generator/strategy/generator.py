@@ -1,7 +1,7 @@
 STRATEGIES_CODE = {
     "broadcast": {
         "write": """\t\tfor(int i = 0; i < remotes.arrayLength; i++) {\n\t\t\tconnection.connect(remotes[i])\n\t\t\tconnection.make(r)\n\t\t}\n""",
-        "read": """\t\tconnection.connect(remotes[0])\n\t\treturn connection.make(r, responseBodyType)\n"""
+        "read": """\t\tconnection.connect(remotes[0])\n\t\treturn connection.make(r)\n"""
     },
 }
 
@@ -23,6 +23,6 @@ class StrategyGenerator():
                 file.write("\n")
 
                 # write readStrategy
-                file.write("\tResponse {}(Request r, Type responseBodyType) ".format(read_strategy_method_name) + "{\n")
+                file.write("\tResponse {}(Request r) ".format(read_strategy_method_name) + "{\n")
                 file.write(STRATEGIES_CODE[strategy]["read"])
                 file.write("\t}\n")
