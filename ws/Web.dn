@@ -1,0 +1,61 @@
+component provides ws.Web requires ws.forms.Parser:multipart formParser,
+    repositories.ListRepository repo, data.IntUtil iu, io.Output out {
+
+    void Web:setup() {
+        out.println("Server started on por 8080")
+    }
+	
+    bool Web:get(char path[], DocStream s){
+        if (path == "/") {
+            s.write("Hello!")
+            s.sendResponse()
+            return true
+        }
+
+        if (path == "/all") {
+            int all[] = repo.getAll()
+            
+            s.write("[")
+            for (int i = 0; i < all.arrayLength; i++) {
+                s.write("$(iu.makeString(all[i]))")
+                if (i < all.arrayLength - 1) s.write(", ")
+            }
+            s.write("]")
+            s.sendResponse()
+            return true
+        }
+
+        if (path == "/sum") {
+            int sum = repo.getSum()
+            
+            s.write("{")
+            s.write("\"sum\": ")
+            s.write("$(iu.makeString(sum))")
+            s.write("}")
+            s.sendResponse()
+            return true
+        }
+		
+        return false
+    }
+
+    bool Web:post(char path[], char contentType[], byte payload[], DocStream s) {
+		if (path == "/add") {
+            FormData form = formParser.parse(contentType, payload)
+            int num
+
+            for(int i=0; i < form.fields.arrayLength; i++) {
+                if(form.fields[i].key == "number") num = iu.intFromString(form.fields[i].value)
+            }
+
+            repo.append(num)
+
+            s.setStatusCode(201, "Created", true)
+            s.sendResponse()
+            return true
+        }
+
+        return false
+    }
+	
+}

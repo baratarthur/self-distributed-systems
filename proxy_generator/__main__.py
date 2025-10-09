@@ -1,11 +1,13 @@
 import os
-from config import DpdlReader
+from config import DidlReader
+from helpers.write_component_helper import WriteComponentHelper
 from header.generator import HeaderGenerator
 from methods.generator import MethodsGenerator
-from strategy.generator import StrategyGenerator
+from strategy.configs import strategy_configs
 from adaptation.generator import AdaptationGenerator
+from remote.generator import RemoteGenerator
 
-IDL_EXTENSION = "dpdl"
+IDL_EXTENSION = "didl"
 
 idl_resources = []
 
@@ -15,33 +17,39 @@ for (path, dirname, files) in os.walk("resources"):
         if file_extension_type != IDL_EXTENSION: continue
         idl_resources.append(path + "/" + file)
 
-for dpdl_filepath in idl_resources:
-    interface_filepath = dpdl_filepath.replace(".dpdl", ".dn")
+for didl_filepath in idl_resources:
+    interface_filepath = didl_filepath.replace(f".{IDL_EXTENSION}", ".dn")
 
-    with open(dpdl_filepath, "r") as dpdl_file, open(interface_filepath, "r") as interface_file:
-        dpdl_config = DpdlReader(dpdl_file)
-        interface_file_text = interface_file.read().replace("\n", "")
+    with open(didl_filepath, "r") as didl_file:
+        didl_config = DidlReader(didl_file)
+        component_implementations = ""
+
+        with open(didl_config.component_file, "r") as component_file:
+            component_implementations = component_file.read()
 
         # verify if outputpath exists
-        if not os.path.exists(dpdl_config.output_folder):
-            os.makedirs(dpdl_config.output_folder)
-        
-        file_name = dpdl_filepath.split("/")[-1].replace(".dpdl", ".proxy.dn")
-        output_file_path = f"{dpdl_config.output_folder}/{file_name}"
+        if not os.path.exists(didl_config.output_folder):
+            os.makedirs(didl_config.output_folder)
 
-        strategies = {dpdl_config.attributes[attr]['strategy'] for attr in dpdl_config.attributes}
+        for strategy in strategy_configs:
+            for charachteristic in strategy_configs[strategy]["charachteristics"]:
+                proxy_file_name = didl_filepath.split("/")[-1].replace(f".{IDL_EXTENSION}", f".proxy.{strategy}.{charachteristic}.dn")
+                output_file_path = f"{didl_config.output_folder}/{proxy_file_name}"
 
-        ComponentHeader = HeaderGenerator(interface_filepath, dpdl_config.dependencies, dpdl_config.remotes)
-        ComponentMethods = MethodsGenerator(dpdl_config.methods, ComponentHeader.get_interface_name(), dpdl_config.attributes)
-        ComponentStrategyAndFooter = StrategyGenerator(strategies)
-        ComponentAdaptation = AdaptationGenerator(dpdl_config.on_active, dpdl_config.on_inactive)
+                with open(output_file_path, "w") as out_file:
+                    writer = WriteComponentHelper(out_file)
+                    ComponentHeader = HeaderGenerator(interface_filepath, [*didl_config.dependencies, *strategy_configs[strategy]["dependencies"]], didl_config.remotes)
+                    ComponentMethods = MethodsGenerator(didl_config.methods, ComponentHeader.get_interface_name(),
+                                                        didl_config.attributes, component_implementations, strategy)
+                    ComponentAdaptation = AdaptationGenerator(writer, didl_config.on_active, didl_config.on_inactive)
 
-        with open(output_file_path, "w") as out_file:
-            ComponentHeader.provide_component_header(out_file)
-            out_file.write("\n")
-            ComponentMethods.provide_method_implementation(out_file)
-            out_file.write("\n")
-            ComponentStrategyAndFooter.provide_strategy(out_file)
-            out_file.write("\n")
-            ComponentAdaptation.provide_daptation(out_file)
-            out_file.write("}\n") # close component scope
+                    component = ComponentHeader.get_component_flow(writer)
+                    component(writer, [
+                        ComponentHeader.provide_addresses(),
+                        *ComponentHeader.provide_pointer(),
+                        "",
+                        *ComponentMethods.provide_methods(writer),
+                        *[factory(writer) for factory in strategy_configs[strategy]["charachteristics"][charachteristic]],
+                        ComponentAdaptation.provide_on_active(),
+                        ComponentAdaptation.provide_on_inactive(),
+                    ])

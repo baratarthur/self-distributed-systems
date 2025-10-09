@@ -1,0 +1,65 @@
+
+
+component provides repositories.ListRepository(AdaptEvents) requires network.rpc.RPCUtil connection, data.IntUtil iu, data.json.JSONEncoder je, util.Random random {
+	Address remotes[] = new Address[](new Address("localhost", 8081), new Address("localhost", 8082))
+	int addressPointer = 0
+	Mutex pointerLock = new Mutex()
+	
+	Metadata[] buildMetaForMethod(char method[]) {
+		Metadata metaMethod = new Metadata("method", method)
+		return new Metadata[](metaMethod)
+	}
+
+	void ListRepository:append(store int number) {
+		AppendParamsFormat params = new AppendParamsFormat(number)
+		char requestBody[] = je.jsonFromData(params)
+		Request req = new Request(buildMetaForMethod("append"), requestBody)
+		broadcast(req)
+	}
+
+	int[] ListRepository:getList() {
+		char requestBody[] = ""
+		Request req = new Request(buildMetaForMethod("getList"), requestBody)
+		Response res = anycast(req)
+		return je.jsonToArray(res.content, typeof(int[]))
+	}
+
+	int ListRepository:getSum() {
+		char requestBody[] = ""
+		Request req = new Request(buildMetaForMethod("getSum"), requestBody)
+		Response res = anycast(req)
+		return iu.intFromString(res.content)
+	}
+
+	Response broadcast(Request r) {
+		Response res
+		mutex(pointerLock) {
+			for(int i = 0; i < remotes.arrayLength; i++) {
+				connection.connect(remotes[i])
+				res = connection.make(r)
+			}
+
+		}
+
+		return res
+	}
+
+	Response anycast(Request r) {
+		int i = random.getInt(remotes.arrayLength)
+		connection.connect(remotes[i])
+		return connection.make(r)
+	}
+
+	active() {
+		for(int i = 0; i < list.arrayLength; i++){
+			append(list[i])
+		}
+	}
+
+	inactive() {
+		list = getList()
+		sum = getSum()
+	}
+
+}
+

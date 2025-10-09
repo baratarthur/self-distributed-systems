@@ -1,0 +1,40 @@
+{
+	"outputFolder": "repositories",
+    "componentFile": "repositories/ListRepository.dn",
+    "dependencies": [
+        { "lib": "network.rpc.RPCUtil", "alias": "connection" },
+        { "lib": "data.IntUtil", "alias": "iu" },
+        { "lib": "data.json.JSONEncoder", "alias": "je" }
+    ],
+    "remotes": [
+        { "address": "localhost", "port": 8081 },
+        { "address": "localhost", "port": 8082 }
+    ],
+    "attributes": {
+        "list": {"type": "int[]", "calculateWithEach": "append"},
+        "sum": {"type": "int", "softOf": "list"}
+    },
+	"methods": {
+        "append": {
+            "returnType": "void",
+            "parameters": [
+                {"name": "number", "type": "int", "store": true, "variableParser": "iu.makeString({})"}
+            ],
+            "uses": ["list", "sum"]
+        },
+        "getList": {
+            "returnType": "int[]",
+            "returnParser": "je.jsonToArray({}, typeof(int[]))",
+            "remoteReturnParser": "je.jsonFromArray({})",
+            "parameters": [],
+            "uses": ["list"]
+        },
+        "getSum": {
+            "returnType": "int",
+            "returnParser": "iu.intFromString({})",
+            "remoteReturnParser": "iu.makeString({})",
+            "parameters": [],
+            "uses": ["sum"]
+        }
+    }
+}

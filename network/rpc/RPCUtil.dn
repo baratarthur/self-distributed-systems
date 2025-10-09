@@ -1,6 +1,6 @@
 const char debugMSG[] = "[@RPCUtil]"
 
-component provides RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
+component provides network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
     data.IntUtil iu, data.StringUtil su, Constants {
     TCPSocket connectionSocket = null
 

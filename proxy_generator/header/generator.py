@@ -1,3 +1,4 @@
+from helpers.write_component_helper import WriteComponentHelper
 
 class HeaderGenerator:
     def __init__(self, interface_file_path, dependencies, remotes):
@@ -9,15 +10,15 @@ class HeaderGenerator:
     def get_component_name(self, interface_file_path) -> str:
         return interface_file_path.replace("resources/", "").replace(".dn", "").replace("/", ".")
 
-    def provide_component_header(self, file):
-        file.write(self.general_dependencies)
-        file.write("\n")
-        file.write(f"component provides {self.name}(AdaptEvents) {self.get_component_definition()}" + " {\n")
-        file.write(self.provide_component_resources())
+    def get_component_flow(self, writer: WriteComponentHelper):
+        writer.write_idented(self.general_dependencies)
+        writer.break_line()
+
+        return writer.use_idented_flow(f"component provides {self.name}(AdaptEvents) {self.get_component_definition()}")
 
     def get_component_definition(self) -> str:
         if self.component_dependencies != "":
-            return "requires " + self.component_dependencies[:-2] # retirar ultima ", " adicional
+            return "requires " + self.component_dependencies
         else:
             return ""
     
@@ -25,20 +26,15 @@ class HeaderGenerator:
         return "".join([f"uses {dep['lib']}\n" for dep in dependencies if dep['alias'] == None])
     
     def provide_component_dependecies(self, dependencies) -> str:
-        return "".join([f"{dep['lib']} {dep['alias']}, " for dep in dependencies if dep['alias'] != None])
+        return ", ".join([f"{dep['lib']} {dep['alias']}" for dep in dependencies if dep['alias'] != None])
     
-    def provide_component_resources(self):
-        resources = ""
-        resources += self.provide_addressess()
-        return resources
-    
-    def provide_addressess(self) -> str:
-        var_assign = "\tAddress remotes[] = new Address[]("
-        for remote in self.remotes:
-            var_assign += f"new Address(\"{remote['address']}\", {remote['port']}),"
-        var_assign = var_assign[:-1]
-        var_assign += ")\n"
+    def provide_addresses(self) -> str:
+        remote_adresses = ", ".join([f"new Address(\"{remote['address']}\", {remote['port']})" for remote in self.remotes])
+        var_assign = f"Address remotes[] = new Address[]({remote_adresses})"
         return var_assign
+    
+    def provide_pointer(self) -> list:
+        return ["int addressPointer = 0", "Mutex pointerLock = new Mutex()"]
     
     def get_interface_name(self) -> str:
         return self.name.split('.')[1]
