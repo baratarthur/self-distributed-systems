@@ -1,0 +1,21 @@
+component provides utils.IntArrayUtil requires data.IntUtil iu, data.StringUtil su, io.Output out {
+    int[] IntArrayUtil:getIntListFromString(char s[]) {
+        int numsValue[] = new int[]()
+        char onlyNumbers[] = su.subString(s, 1, s.arrayLength - 2)
+        if(onlyNumbers.arrayLength == "") return numsValue
+        String nums[] = su.explode(onlyNumbers, ",")
+        for (int i = 0; i < nums.arrayLength; i++) numsValue = new int[](numsValue, iu.intFromString(nums[i].string))
+        return numsValue
+    }
+
+    char[] IntArrayUtil:getCharFromIntList(int nums[]) {
+        char numsValue[] = new char[]("[")
+        for (int i = 0; i < nums.arrayLength; i++){
+            numsValue = new char[](numsValue, iu.makeString(nums[i]))
+            if(i != nums.arrayLength - 1) numsValue = new char[](numsValue, ",")
+        }
+        numsValue = new char[](numsValue, "]")
+        return numsValue
+    }
+
+}

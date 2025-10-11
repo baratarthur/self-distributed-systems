@@ -4,6 +4,7 @@
     "dependencies": [
         { "lib": "network.rpc.RPCUtil", "alias": "connection" },
         { "lib": "data.IntUtil", "alias": "iu" },
+        { "lib": "utils.IntArrayUtil", "alias": "iau" },
         { "lib": "data.json.JSONEncoder", "alias": "je" }
     ],
     "remotes": [
@@ -18,14 +19,14 @@
         "append": {
             "returnType": "void",
             "parameters": [
-                {"name": "number", "type": "int", "store": true, "variableParser": "iu.makeString({})"}
+                {"name": "number", "type": "int", "store": true}
             ],
             "uses": ["list", "sum"]
         },
         "getList": {
             "returnType": "int[]",
-            "returnParser": "je.jsonToArray({}, typeof(int[]))",
-            "remoteReturnParser": "je.jsonFromArray({})",
+            "returnParser": "iau.getIntListFromString({})",
+            "remoteReturnParser": "iau.getCharFromIntList({})",
             "parameters": [],
             "uses": ["list"]
         },

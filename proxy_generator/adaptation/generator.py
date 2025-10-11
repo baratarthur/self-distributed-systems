@@ -7,7 +7,7 @@ class AdaptationGenerator:
         self.on_inactive = on_inactive
 
     def provide_on_active(self):
-        return self.writer.provide_idented_flow("active()", self.on_active)
+        return self.writer.provide_idented_flow("void AdaptEvents:active()", self.on_active)
 
     def provide_on_inactive(self):
-        return self.writer.provide_idented_flow("inactive()", self.on_inactive)
+        return self.writer.provide_idented_flow("void AdaptEvents:inactive()", self.on_inactive)

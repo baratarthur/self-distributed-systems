@@ -1,0 +1,64 @@
+uses Constants
+
+const char debugMSG[] = "[@Remote]"
+
+
+component provides remotes.Remote:listrepository requires net.TCPSocket, net.TCPServerSocket, io.Output out, network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, data.json.JSONEncoder je, network.rpc.RPCUtil connection, repositories.ListRepository remoteComponent {
+	bool serviceStatus = false
+	
+
+	void Remote:start(int PORT) {
+		TCPServerSocket host = new TCPServerSocket()
+		serviceStatus = true
+		
+
+		if (!host.bind(TCPServerSocket.ANY_ADDRESS, PORT)) {
+			out.println("Error: failed to bind master socket")
+			return
+		}
+
+		out.println("$debugMSG - Server started on port $(iu.makeString(PORT))")
+		while (serviceStatus) {
+			TCPSocket client = new TCPSocket()
+			if (client.accept(host)) asynch::handleRequest(client)
+		}
+
+	}
+
+	void Remote:handleRequest(TCPSocket s) {
+		char requestContent[] = connection.receiveData(s)
+		if(requestContent == null) s.disconnect()
+		Request req = connection.parseRequestFromString(requestContent)
+		out.println("$debugMSG - raw request $(req.content)")
+		Response res = process(req)
+		char rawResponse[] = connection.buildRawResponse(res)
+		out.println("$debugMSG - raw response $(rawResponse)")
+		s.send(rawResponse)
+		s.disconnect()
+	}
+
+	Response process(Request req) {
+		char method[] = connection.getMethodFromMetadata(req.meta)
+		
+
+		if(method == "append") {
+			AppendParamsFormat paramsData = je.jsonToData(req.content, typeof(AppendParamsFormat))
+			remoteComponent.append(paramsData.number)
+			return connection.buildResponse("append", "200")
+		}
+
+		if(method == "getList") {
+			int result[] = remoteComponent.getList()
+			return connection.buildResponseWithData("getList", "200", iau.getCharFromIntList(result))
+		}
+
+		if(method == "getSum") {
+			int result = remoteComponent.getSum()
+			return connection.buildResponseWithData("getSum", "200", iu.makeString(result))
+		}
+
+		return connection.buildResponse(method, "404")
+	}
+
+}
+

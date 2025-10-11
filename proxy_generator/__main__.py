@@ -53,3 +53,12 @@ for didl_filepath in idl_resources:
                         ComponentAdaptation.provide_on_active(),
                         ComponentAdaptation.provide_on_inactive(),
                     ])
+
+        component_name = didl_config.component_file.split('/')[-1].replace(".dn", "")
+        component_package = didl_config.component_file.split('/')[-2]
+        output_remote_path = f"remotes/Remote.{component_name.lower()}.dn"
+        with open(output_remote_path, "w") as out_file:
+            remote_generator = RemoteGenerator(file=out_file, component_name=component_name, component_deps=HeaderGenerator.static_provide_component_dependecies(didl_config.dependencies),
+                                                component_package=component_package, component_methods=didl_config.methods)
+            remote_generator.provide_header()
+            remote_generator.provide_server_methods()

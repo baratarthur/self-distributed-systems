@@ -1,5 +1,5 @@
 data AppendParamsFormat {
-    int num
+    int number
 }
 
 interface ListRepository {

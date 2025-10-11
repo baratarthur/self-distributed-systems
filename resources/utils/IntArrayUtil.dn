@@ -1,0 +1,4 @@
+interface IntArrayUtil {
+    int[] getIntListFromString(char s[])
+    char[] getCharFromIntList(int nums[])
+}

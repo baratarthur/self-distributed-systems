@@ -1,6 +1,6 @@
 
 
-component provides repositories.ListRepository(AdaptEvents) requires network.rpc.RPCUtil connection, data.IntUtil iu, data.json.JSONEncoder je, util.Random random {
+component provides repositories.ListRepository(AdaptEvents) requires network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, data.json.JSONEncoder je, util.Random random {
 	Address remotes[] = new Address[](new Address("localhost", 8081), new Address("localhost", 8082))
 	int addressPointer = 0
 	Mutex pointerLock = new Mutex()
@@ -21,7 +21,7 @@ component provides repositories.ListRepository(AdaptEvents) requires network.rpc
 		char requestBody[] = ""
 		Request req = new Request(buildMetaForMethod("getList"), requestBody)
 		Response res = anycast(req)
-		return je.jsonToArray(res.content, typeof(int[]))
+		return iau.getIntListFromString(res.content)
 	}
 
 	int ListRepository:getSum() {
@@ -50,13 +50,13 @@ component provides repositories.ListRepository(AdaptEvents) requires network.rpc
 		return connection.make(r)
 	}
 
-	active() {
+	void AdaptEvents:active() {
 		for(int i = 0; i < list.arrayLength; i++){
 			append(list[i])
 		}
 	}
 
-	inactive() {
+	void AdaptEvents:inactive() {
 		list = getList()
 		sum = getSum()
 	}
