@@ -30,7 +30,5 @@ RUN chmod +x /app/compile.sh /app/run-remote.sh
 
 RUN /app/compile.sh
 
-ENV PORT=8081
-ENV APP_PORT=2010
 # Define um comando padrão para interagir com o container
-CMD ["/app/run-remote.sh"]
+CMD /app/run-remote.sh $PORT

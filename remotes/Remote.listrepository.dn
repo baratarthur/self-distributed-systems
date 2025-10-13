@@ -1,4 +1,4 @@
-uses Constants
+uses utils.Constants
 
 const char debugMSG[] = "[@Remote]"
 
@@ -29,10 +29,8 @@ component provides remotes.Remote:listrepository requires net.TCPSocket, net.TCP
 		char requestContent[] = connection.receiveData(s)
 		if(requestContent == null) s.disconnect()
 		Request req = connection.parseRequestFromString(requestContent)
-		out.println("$debugMSG - raw request $(req.content)")
 		Response res = process(req)
 		char rawResponse[] = connection.buildRawResponse(res)
-		out.println("$debugMSG - raw response $(rawResponse)")
 		s.send(rawResponse)
 		s.disconnect()
 	}

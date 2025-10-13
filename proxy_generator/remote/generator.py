@@ -19,7 +19,7 @@ class RemoteGenerator:
         ]
     
     def provide_header(self):
-        self.writer.write_idented("uses Constants")
+        self.writer.write_idented("uses utils.Constants")
         self.writer.break_line()
         self.writer.write_idented('const char debugMSG[] = "[@Remote]"')
         self.writer.break_line()

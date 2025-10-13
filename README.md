@@ -11,3 +11,5 @@ This is a toy application for testing proxy aproaches on runtime adaptation usin
 - see example on ```resources/repositories``` folder
 - just run ```python proxy_generator``` on the source and check the output
 - to verify the generated file, just check the output path and look for a ```.proxy.dn``` file
+
+## Remote manager

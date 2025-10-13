@@ -18,16 +18,8 @@ component provides ws.Web requires ws.forms.Parser:multipart formParser,
 
     void Web:setup() {
         repo = new ListRepository() from repoComponents[lastComponentIndex].mainComponent
-        asynch::changeProxy()
+        changeRepo(2) // start with weak replication
         out.println("Server started on por 8080")
-    }
-
-    void changeRepo(int option) {
-        out.println("Changing repository to $(names[option].string)")
-        mutex(lock) {
-            adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.ListRepository")
-            lastComponentIndex = option
-        }
     }
 
     void changeProxy() {
@@ -37,6 +29,14 @@ component provides ws.Web requires ws.forms.Parser:multipart formParser,
             char userInput[] = in.readln()
             instruction = iu.intFromString(userInput)
             changeRepo(instruction)
+        }
+    }
+
+    void changeRepo(int option) {
+        out.println("Changing repository to $(names[option].string)")
+        mutex(lock) {
+            adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.ListRepository")
+            lastComponentIndex = option
         }
     }
 

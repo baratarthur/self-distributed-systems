@@ -4,7 +4,7 @@ component provides App requires data.IntUtil iu, remotes.Remote:listrepository s
     int portDist = 0
 
     int App:main(AppParam params[]) {
-        if (params.arrayLength == 2) {
+        if (params.arrayLength > 0) {
 			portDist = iu.intFromString(params[0].string)
 		} else {
 			portDist = DEFAULT_DIST_PORT
