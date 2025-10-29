@@ -1,11 +1,10 @@
 from helpers.write_component_helper import WriteComponentHelper
 
 class HeaderGenerator:
-    def __init__(self, interface_file_path, dependencies, remotes):
+    def __init__(self, interface_file_path, dependencies):
         self.name = self.get_component_name(interface_file_path)
         self.general_dependencies = self.provide_general_dependecies(dependencies)
         self.component_dependencies = self.provide_component_dependecies(dependencies)
-        self.remotes = remotes
 
     def get_component_name(self, interface_file_path) -> str:
         return interface_file_path.replace("resources/", "").replace(".dn", "").replace("/", ".")
@@ -29,8 +28,7 @@ class HeaderGenerator:
         return ", ".join([f"{dep['lib']} {dep['alias']}" for dep in dependencies if dep['alias'] != None])
     
     def provide_addresses(self) -> str:
-        remote_adresses = ", ".join([f"new Address(\"{remote['address']}\", {remote['port']})" for remote in self.remotes])
-        var_assign = f"Address remotes[] = new Address[]({remote_adresses})"
+        var_assign = f"Address remotes[] = new Address[]"
         return var_assign
     
     def provide_pointer(self) -> list:

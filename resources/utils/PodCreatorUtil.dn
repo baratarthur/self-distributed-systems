@@ -1,0 +1,6 @@
+uses network.rpc.RPCUtil
+
+interface PodCreatorUtil {
+    Address[] createPods(int numberOfPods, char imageName[])
+    bool deleteAllPods(Address addresses[])
+}

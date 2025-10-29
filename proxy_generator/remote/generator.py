@@ -13,6 +13,7 @@ class RemoteGenerator:
             "net.TCPSocket",
             "net.TCPServerSocket",
             "io.Output out",
+            "data.json.JSONEncoder je",
             component_deps,
             connection_library,
             f"{component_package}.{component_name[0].upper() + component_name[1:]} remoteComponent",

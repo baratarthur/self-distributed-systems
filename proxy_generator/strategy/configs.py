@@ -4,6 +4,8 @@ strategy_configs = {
     "replicate": {
         "dependencies": [
             { "lib": "util.Random", "alias": "random" },
+            { "lib": "data.json.JSONEncoder", "alias": "je" },
+            { "lib": "utils.PodCreatorUtil", "alias": "podCreator" }
         ],
         "charachteristics": {
             "weak": [

@@ -26,10 +26,10 @@ WORKDIR /app
 # Concede permissão de execução ao executável "dana"
 COPY . .
 
-RUN chmod +x /app/compile.sh
+RUN chmod +x /app/build/compile.sh
 RUN chmod +x /app/run.sh
 
-RUN /app/compile.sh
+RUN /app/build/compile.sh
 
 # ENV MODE=1
 # Define um comando padrão para interagir com o container

@@ -1,7 +1,7 @@
 
 
-component provides repositories.ListRepository(AdaptEvents) requires network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, data.json.JSONEncoder je, util.Random random {
-	Address remotes[] = new Address[](new Address("localhost", 8081), new Address("localhost", 8082))
+component provides repositories.ListRepository(AdaptEvents) requires network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, util.Random random, data.json.JSONEncoder je, utils.PodCreatorUtil podCreator {
+	Address remotes[] = new Address[]
 	int addressPointer = 0
 	Mutex pointerLock = new Mutex()
 	
@@ -54,6 +54,7 @@ component provides repositories.ListRepository(AdaptEvents) requires network.rpc
 	}
 
 	void AdaptEvents:active() {
+		remotes = podCreator.createPods(2, "dana-remote")
 		for(int i = 0; i < list.arrayLength; i++){
 			append(list[i])
 		}
@@ -62,6 +63,7 @@ component provides repositories.ListRepository(AdaptEvents) requires network.rpc
 	void AdaptEvents:inactive() {
 		list = getList()
 		sum = getSum()
+		podCreator.deleteAllPods(remotes)
 	}
 
 }

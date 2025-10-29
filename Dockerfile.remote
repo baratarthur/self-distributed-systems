@@ -26,9 +26,9 @@ WORKDIR /app
 # Concede permissão de execução ao executável "dana"
 COPY . .
 
-RUN chmod +x /app/compile.sh /app/run-remote.sh
+RUN chmod +x /app/build/compile.sh /app/run-remote.sh
 
-RUN /app/compile.sh
+RUN /app/build/compile.sh
 
 # Define um comando padrão para interagir com o container
 CMD /app/run-remote.sh $PORT

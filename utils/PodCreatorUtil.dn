@@ -1,0 +1,26 @@
+component provides utils.PodCreatorUtil requires net.http.HTTPRequest req, data.json.JSONParser jsonParser, data.IntUtil iu, io.Output out {
+    char podCreatorUrl[] = "http://pod-creator-service:5001"
+
+    Address[] PodCreatorUtil:createPods(int numberOfPods, char imageName[]) {
+        Address podAddresses[] = new Address[]()
+        for(int i = 0; i < numberOfPods; i++) {
+            char podName[] = "$imageName-$(i+1)"
+            int podPort = 8081 + i
+            char remoteComponentOne[] = "{\"pod_name\": \"$(podName)\", \"image_name\": \"$imageName:latest\", \"app_port\": $(iu.makeString(podPort))}"
+            Header headers[] = new Header[](new Header("Content-Type", "application/json"), new Header("Accept", "application/json"))
+            HTTPResponse resComp = req.post("$podCreatorUrl/create-pod", headers, remoteComponentOne)
+            out.println("Created pod: $(podName) at port: $(podPort) with response code: $(resComp.responseCode)")
+            podAddresses = new Address[](podAddresses, new Address(podName, podPort))
+        }
+        return podAddresses
+    }
+
+    bool PodCreatorUtil:deleteAllPods(Address addresses[]) {
+        for(int i = 0; i < addresses.arrayLength; i++) {
+            char podName[] = addresses[i].name
+            Header headers[] = new Header[](new Header("Content-Type", "application/json"), new Header("Accept", "application/json"))
+            HTTPResponse resComp = req.post("$podCreatorUrl/delete-pod/$podName", headers, "")
+        }
+        return true
+    }
+}

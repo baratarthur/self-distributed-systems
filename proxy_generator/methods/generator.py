@@ -50,7 +50,7 @@ class MethodsGenerator:
 
             method_changes_state = 0
 
-            for attribute in method_props['uses']:
+            for attribute in self.attributes:
                 assignment_pattern = re.compile(fr"""
                     ^   # Início da linha
                     \s* # Espaço em branco opcional no início

@@ -38,7 +38,7 @@ for didl_filepath in idl_resources:
 
                 with open(output_file_path, "w") as out_file:
                     writer = WriteComponentHelper(out_file)
-                    ComponentHeader = HeaderGenerator(interface_filepath, [*didl_config.dependencies, *strategy_configs[strategy]["dependencies"]], didl_config.remotes)
+                    ComponentHeader = HeaderGenerator(interface_filepath, [*didl_config.dependencies, *strategy_configs[strategy]["dependencies"]])
                     ComponentMethods = MethodsGenerator(didl_config.methods, ComponentHeader.get_interface_name(),
                                                         didl_config.attributes, component_implementations, strategy)
                     ComponentAdaptation = AdaptationGenerator(writer, didl_config.on_active, didl_config.on_inactive)

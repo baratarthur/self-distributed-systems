@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dana-main
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dana-main
+  template:
+    metadata:
+      labels:
+        app: dana-main
+    spec:
+      containers:
+      - name: dana-main
+        image: dana-main:v3
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dana-main-service
+spec:
+  type: NodePort
+  selector:
+    app: dana-main
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-creator-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pod-creator
+  template:
+    metadata:
+      labels:
+        app: pod-creator
+    spec:
+      serviceAccountName: pod-creator-sa
+      containers:
+      - name: webservice
+        image: pod-creator-webservice:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5001
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pod-creator-service
+spec:
+  type: ClusterIP # Alterado de NodePort para ClusterIP
+  selector:
+    app: pod-creator
+  ports:
+  - protocol: TCP
+    port: 5001
+    targetPort: 5001
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pod-creator-access-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: pod-creator
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: dana-main
+    ports:
+    - protocol: TCP
+      port: 5001
