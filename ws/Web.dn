@@ -1,12 +1,12 @@
 
-component provides ws.Web requires ws.forms.Parser:multipart formParser, repositories.ListRepository repo,
+component provides ws.Web requires ws.forms.Parser:multipart formParser, repositories.list.ListRepository repo,
     data.IntUtil iu, io.Output out, composition.RecursiveLoader loader, composition.Adapt adapter,
     io.Input in {
     ListRepository repo
     LoadedComponents repoComponents[] = new LoadedComponents[](
-        loader.load("repositories/ListRepository.o"),
-        loader.load("repositories/ListRepository.proxy.replicate.strong.o"),
-        loader.load("repositories/ListRepository.proxy.replicate.weak.o")
+        loader.load("repositories/list/ListRepository.o"),
+        loader.load("repositories/list/ListRepository.proxy.replicate.strong.o"),
+        loader.load("repositories/list/ListRepository.proxy.replicate.weak.o")
     )
     String names[] = new String[](
         new String("ListRepository"),

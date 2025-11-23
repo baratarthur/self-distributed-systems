@@ -1,6 +1,6 @@
 {
-	"outputFolder": "repositories",
-    "componentFile": "repositories/ListRepository.dn",
+	"outputFolder": "repositories/list",
+    "componentFile": "repositories/list/ListRepository.dn",
     "allow": "consistent",
     "dependencies": [
         { "lib": "network.rpc.RPCUtil", "alias": "connection" },

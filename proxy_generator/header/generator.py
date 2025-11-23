@@ -35,4 +35,4 @@ class HeaderGenerator:
         return ["int addressPointer = 0", "Mutex pointerLock = new Mutex()"]
     
     def get_interface_name(self) -> str:
-        return self.name.split('.')[1]
+        return self.name.split('.')[-1]

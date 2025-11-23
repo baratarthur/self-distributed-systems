@@ -1,6 +1,6 @@
 const char debugMSG[] = "[@ListRepository]"
 
-component provides repositories.ListRepository {
+component provides repositories.list.ListRepository {
     void ListRepository:append(store int num) {
         list = new int[](list, num)
         sum += num
