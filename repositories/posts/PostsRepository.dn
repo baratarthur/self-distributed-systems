@@ -1,0 +1,34 @@
+const char debugMSG[] = "[@PostsRepository]"
+
+component provides repositories.posts.PostsRepository {
+    void PostsRepository:addPost(store Post newPost) {
+        posts = new Post[](posts, newPost)
+    }
+
+    void PostsRepository:likePost(store int postId) {
+        for (int i = 0; i < posts.arrayLength; i++) {
+            if (posts[i].id == postId) {
+                posts[i].likes = posts[i].likes + 1
+                break
+            }
+        }
+    }
+    
+    void PostsRepository:setPosts(store Post posts[]) {
+        posts = posts
+    }
+
+    Post[] PostsRepository:getPosts() {
+        return posts
+    }
+
+    Post[] PostsRepository:getUserFeed(store int userId) {
+        Post userPosts[] = new Post[]()
+        for (int i = 0; i < posts.arrayLength; i++) {
+            if (posts[i].userId != userId) {
+                userPosts = new Post[](userPosts, posts[i])
+            }
+        }
+        return userPosts
+    }
+}

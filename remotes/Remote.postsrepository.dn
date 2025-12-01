@@ -1,0 +1,75 @@
+uses utils.Constants
+
+const char debugMSG[] = "[@Remote]"
+
+
+component provides remotes.Remote:postsrepository requires net.TCPSocket, net.TCPServerSocket, io.Output out, data.json.JSONEncoder je, network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, network.rpc.RPCUtil connection, repositories.posts.PostsRepository remoteComponent {
+	bool serviceStatus = false
+	
+
+	void Remote:start(int PORT) {
+		TCPServerSocket host = new TCPServerSocket()
+		serviceStatus = true
+		
+
+		if (!host.bind(TCPServerSocket.ANY_ADDRESS, PORT)) {
+			out.println("Error: failed to bind master socket")
+			return
+		}
+
+		out.println("$debugMSG - Server started on port $(iu.makeString(PORT))")
+		while (serviceStatus) {
+			TCPSocket client = new TCPSocket()
+			if (client.accept(host)) asynch::handleRequest(client)
+		}
+
+	}
+
+	void Remote:handleRequest(TCPSocket s) {
+		char requestContent[] = connection.receiveData(s)
+		if(requestContent == null) s.disconnect()
+		Request req = connection.parseRequestFromString(requestContent)
+		Response res = process(req)
+		char rawResponse[] = connection.buildRawResponse(res)
+		s.send(rawResponse)
+		s.disconnect()
+	}
+
+	Response process(Request req) {
+		char method[] = connection.getMethodFromMetadata(req.meta)
+		
+
+		if(method == "addPost") {
+			AddPostParamsFormat paramsData = je.jsonToData(req.content, typeof(AddPostParamsFormat))
+			remoteComponent.addPost(paramsData.newPost)
+			return connection.buildResponse("addPost", "200")
+		}
+
+		if(method == "setPosts") {
+			SetPostsParamsFormat paramsData = je.jsonToData(req.content, typeof(SetPostsParamsFormat))
+			remoteComponent.setPosts(paramsData.posts)
+			return connection.buildResponse("setPosts", "200")
+		}
+
+		if(method == "likePost") {
+			LikePostParamsFormat paramsData = je.jsonToData(req.content, typeof(LikePostParamsFormat))
+			remoteComponent.likePost(paramsData.postId)
+			return connection.buildResponse("likePost", "200")
+		}
+
+		if(method == "getPosts") {
+			Post result[] = remoteComponent.getPosts()
+			return connection.buildResponseWithData("getPosts", "200", je.jsonFromArray(result))
+		}
+
+		if(method == "getUserFeed") {
+			GetUserFeedParamsFormat paramsData = je.jsonToData(req.content, typeof(GetUserFeedParamsFormat))
+			Post result[] = remoteComponent.getUserFeed(paramsData.userId)
+			return connection.buildResponseWithData("getUserFeed", "200", je.jsonFromArray(result))
+		}
+
+		return connection.buildResponse(method, "404")
+	}
+
+}
+

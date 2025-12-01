@@ -1,0 +1,160 @@
+[@Remote] - Server started on port 8081
+[@RPCUtil] - raw request received - [{"name": "method", "value": "setPosts"}]©{"posts": [{"id": 11, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 12, "userId": 9, "likes": 0, "content": "teste de post"}, {"id": 13, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 14, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 15, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 16, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 17, "userId": 8, "likes": 0, "content": "teste de post"}, {"id": 18, "userId": 5, "likes": 0, "content": "teste de post"}, {"id": 19, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 20, "userId": 9, "likes": 0, "content": "teste de post"}, {"id": 21, "userId": 6, "likes": 0, "content": "teste de post"}, {"id": 22, "userId": 9, "likes": 0, "content": "teste de post"}, {"id": 23, "userId": 9, "likes": 0, "content": "teste de post"}, {"id": 24, "userId": 8, "likes": 0, "content": "teste de post"}, {"id": 25, "userId": 9, "likes": 0, "content": "teste de post"}, {"id": 26, "userId": 8, "likes": 0, "content": "teste de post"}, {"id": 27, "userId": 5, "likes": 0, "content": "teste de post"}, {"id": 28, "userId": 1, "likes": 0, "content": "teste de post"}, {"id": 29, "userId": 6, "likes": 0, "content": "teste de post"}, {"id": 30, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 30, "userId": 9, "likes": 0, "content": "teste de post"}, {"id": 32, "userId": 1, "likes": 0, "content": "teste de post"}, {"id": 33, "userId": 8, "likes": 0, "content": "teste de post"}, {"id": 34, "userId": 6, "likes": 0, "content": "teste de post"}, {"id": 35, "userId": 3, "likes": 0, "content": "teste de post"}, {"id": 36, "userId": 1, "likes": 0, "content": "teste de post"}, {"id": 37, "userId": 6, "likes": 0, "content": "teste de post"}]}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 38, "userId": 8, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 39, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 40, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 41, "userId": 9, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 42, "userId": 6, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 43, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 44, "userId": 6, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 45, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 5}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 46, "userId": 9, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 47, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 48, "userId": 3, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 49, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 5}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 50, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 51, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 52, "userId": 6, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 53, "userId": 6, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 5}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 54, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 55, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 56, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 57, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 58, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 5}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 2}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 59, "userId": 3, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 60, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 61, "userId": 6, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 3}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 5}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 2}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 62, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 63, "userId": 2, "likes": 0, "content": "teste de post"}}
+Exception::array index out of bounds on line 60 of ./network/rpc/RPCUtil.o
+[@RPCUtil] - raw request received - 
+ -- called from line 31 of ./remotes/Remote.postsrepository.o
+Exception::null pointer on line 39 of ./remotes/Remote.postsrepository.o
+ -- called from line 32 of ./remotes/Remote.postsrepository.o
+Exception::null pointer on line 73 of ./network/rpc/RPCUtil.o
+ -- called from line 33 of ./remotes/Remote.postsrepository.o
+Exception::Socket is not connected for data send on line 245 of ./net/TCP.o
+ -- called from line 34 of ./remotes/Remote.postsrepository.o
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 64, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 5}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 65, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 66, "userId": 2, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 2}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 67, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 4}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 68, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 2}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 69, "userId": 8, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 70, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 71, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 4}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 72, "userId": 3, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 73, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 4}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 74, "userId": 10, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 75, "userId": 6, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 76, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 5}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 6}
+[@RPCUtil] - raw request received - 
+Exception::array index out of bounds on line 60 of ./network/rpc/RPCUtil.o
+ -- called from line 31 of ./remotes/Remote.postsrepository.o
+Exception::null pointer on line 39 of ./remotes/Remote.postsrepository.o
+ -- called from line 32 of ./remotes/Remote.postsrepository.o
+Exception::null pointer on line 73 of ./network/rpc/RPCUtil.o
+ -- called from line 33 of ./remotes/Remote.postsrepository.o
+Exception::Socket is not connected for data send on line 245 of ./net/TCP.o
+ -- called from line 34 of ./remotes/Remote.postsrepository.o
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 10}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 77, "userId": 5, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 9}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 78, "userId": 2, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 79, "userId": 8, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 80, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 1}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 81, "userId": 3, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 82, "userId": 8, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 83, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 84, "userId": 8, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 8}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "addPost"}]©{"newPost": {"id": 85, "userId": 1, "likes": 0, "content": "teste de post"}}
+[@RPCUtil] - raw request received - [{"name": "method", "value": "getUserFeed"}]©{"userId": 4}

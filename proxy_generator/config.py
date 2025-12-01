@@ -1,19 +1,20 @@
 import json
 
 class DidlReader:
-    def __init__(self, json_path):
+    def __init__(self, json_path, remote_pods: int = 2):
         config_json = json.load(json_path)
         self.output_folder = config_json['outputFolder']
         self.component_file = config_json['componentFile']
         self.dependencies = config_json['dependencies']
         self.attributes = config_json['attributes']
         self.methods = config_json['methods']
-        self.on_active = self.calculate_on_active()
-        self.on_inactive = self.calculate_on_inactive()
+        self.remote_pods = remote_pods
+        self.remote_name = config_json.get('remoteName', 'dana-remote')
     
-    def calculate_on_active(self) -> list:
-        # TODO: create a name system to generate remote pod names
-        instructions = ['remotes = podCreator.createPods(2, "dana-remote")']
+    def calculate_on_active(self, strategy: str, type: str) -> list:
+        instructions = [
+            f'remotes = podCreator.getPodsName({self.remote_pods}, \"{self.remote_name}-{strategy}-{type}\")'
+        ]
         for attribute in self.attributes:
             if 'calculateWith' in self.attributes[attribute]:
                 instructions.append(f"{self.attributes[attribute]['calculateWith']}({attribute})")

@@ -1,0 +1,37 @@
+data Post {
+    int id
+    int userId
+    int likes
+    char content[]
+}
+
+data ReceivePostDTO {
+    int userId
+    char content[]
+}
+
+data SetPostsParamsFormat {
+    Post posts[]
+}
+
+data AddPostParamsFormat {
+    Post newPost
+}
+
+data LikePostParamsFormat {
+    int postId
+}
+
+data GetUserFeedParamsFormat {
+    int userId
+}
+
+interface PostsRepository {
+    transfer Post posts[]
+
+    void addPost(store Post newPost)
+    void likePost(store int postId)
+    void setPosts(store Post posts[])
+    Post[] getPosts()
+    Post[] getUserFeed(store int userId)
+}

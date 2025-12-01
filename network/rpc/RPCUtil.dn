@@ -27,6 +27,7 @@ component provides network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TC
         }
         
         requestContent = new char[](requestContent, Constants.EOF)
+        out.println("$debugMSG - is socket connectd - $(connectionSocket.connected())")
         connectionSocket.send(requestContent)
         char responseContent[] = receiveData(connectionSocket)
         String json[] = su.explode(responseContent, Constants.SEPARATOR)
@@ -54,6 +55,7 @@ component provides network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TC
     
     Request RPCUtil:parseRequestFromString(char requestString[]) {
         Request r = null
+        out.println("$debugMSG - raw request received - $requestString")
         String json[] = su.explode(requestString, Constants.SEPARATOR)
         Metadata meta[] = je.jsonToArray(json[0].string, typeof(Metadata[]))
 

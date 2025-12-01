@@ -8,6 +8,7 @@ from adaptation.generator import AdaptationGenerator
 from remote.generator import RemoteGenerator
 
 IDL_EXTENSION = "didl"
+NUMBER_OF_REMOTE_PODS = 3
 
 idl_resources = []
 
@@ -21,7 +22,7 @@ for didl_filepath in idl_resources:
     interface_filepath = didl_filepath.replace(f".{IDL_EXTENSION}", ".dn")
 
     with open(didl_filepath, "r") as didl_file:
-        didl_config = DidlReader(didl_file)
+        didl_config = DidlReader(didl_file, NUMBER_OF_REMOTE_PODS)
         component_implementations = ""
 
         with open(didl_config.component_file, "r") as component_file:
@@ -41,7 +42,8 @@ for didl_filepath in idl_resources:
                     ComponentHeader = HeaderGenerator(interface_filepath, [*didl_config.dependencies, *strategy_configs[strategy]["dependencies"]])
                     ComponentMethods = MethodsGenerator(didl_config.methods, ComponentHeader.get_interface_name(),
                                                         didl_config.attributes, component_implementations, strategy)
-                    ComponentAdaptation = AdaptationGenerator(writer, didl_config.on_active, didl_config.on_inactive)
+                    ComponentAdaptation = AdaptationGenerator(writer, didl_config.calculate_on_active(strategy, charachteristic),
+                                                              didl_config.calculate_on_inactive())
 
                     component = ComponentHeader.get_component_flow(writer)
                     component(writer, [

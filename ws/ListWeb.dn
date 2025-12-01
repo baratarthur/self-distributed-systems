@@ -1,0 +1,113 @@
+
+component provides ws.Web requires ws.forms.Parser:multipart formParser, repositories.list.ListRepository repo,
+    data.IntUtil iu, io.Output out, composition.RecursiveLoader loader, composition.Adapt adapter,
+    io.Input in {
+    ListRepository repo
+    LoadedComponents repoComponents[] = new LoadedComponents[](
+        loader.load("repositories/list/ListRepository.o"),
+        loader.load("repositories/list/ListRepository.proxy.replicate.strong.o"),
+        loader.load("repositories/list/ListRepository.proxy.replicate.weak.o")
+    )
+    String names[] = new String[](
+        new String("ListRepository"),
+        new String("ListRepository with strong replication"), 
+        new String("ListRepository with weak replication")
+    )
+    int lastComponentIndex = 0
+    Mutex lock = new Mutex()
+
+    void Web:setup() {
+        repo = new ListRepository() from repoComponents[lastComponentIndex].mainComponent
+        asynch::changeRepo(2) // start with weak replication
+        // asynch::changeProxy()
+        out.println("Server started on por 8080")
+    }
+
+    void changeProxy() {
+        int instruction = 0
+        while(instruction != repoComponents.arrayLength) {
+            printOptions()
+            char userInput[] = in.readln()
+            instruction = iu.intFromString(userInput)
+            changeRepo(instruction)
+        }
+    }
+
+    void changeRepo(int option) {
+        out.println("Changing repository to $(names[option].string)")
+        mutex(lock) {
+            adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.ListRepository")
+            lastComponentIndex = option
+        }
+    }
+
+    void printOptions() {
+        out.println("Select one of the options:")
+        for(int i = 0;i < repoComponents.arrayLength; i++) out.println("$(iu.makeString(i)) - $(names[i].string)")
+        out.println("$(iu.makeString(repoComponents.arrayLength)) - quit mode")
+        out.print("option >")
+    }
+	
+    bool Web:get(char path[], DocStream s){
+        if (path == "/") {
+            s.write("Hello!")
+            s.sendResponse()
+            return true
+        }
+
+        if (path == "/all") {
+            int all[]
+
+            mutex(lock) {
+                all = repo.getList()
+            }
+
+            s.write("[")
+            for (int i = 0; i < all.arrayLength; i++) {
+                s.write("$(iu.makeString(all[i]))")
+                if (i < all.arrayLength - 1) s.write(", ")
+            }
+            s.write("]")
+            s.sendResponse()
+            return true
+        }
+
+        if (path == "/sum") {
+            int sum = 0
+            mutex(lock) {
+                sum = repo.getSum()
+            }
+
+            s.write("{")
+            s.write("\"sum\": ")
+            s.write("$(iu.makeString(sum))")
+            s.write("}")
+            s.sendResponse()
+            return true
+        }
+
+        return false
+    }
+
+    bool Web:post(char path[], char contentType[], byte payload[], DocStream s) {
+		if (path == "/add") {
+            FormData form = formParser.parse(contentType, payload)
+            int num
+
+            for(int i=0; i < form.fields.arrayLength; i++) {
+                if(form.fields[i].key == "number") num = iu.intFromString(form.fields[i].value)
+            }
+
+            mutex(lock) {
+                repo.append(num)
+            }
+
+            s.setStatusCode(201, "Created", true)
+            s.sendResponse()
+            return true
+        }
+
+        return false
+    }
+	
+}

@@ -1,5 +1,5 @@
 
-component provides monitoring.ResponseTime requires time.Calendar ic, time.DateUtil dateUtil {
+component provides stubs.ResponseTime requires time.Calendar ic, time.DateUtil dateUtil {
     DateTime startTime
     DateTime finishTime
 	

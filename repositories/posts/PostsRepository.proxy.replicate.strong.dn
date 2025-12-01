@@ -1,0 +1,82 @@
+
+
+component provides repositories.posts.PostsRepository(AdaptEvents) requires network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, data.json.JSONEncoder je, utils.PodCreatorUtil podCreator {
+	Address remotes[] = new Address[]
+	int addressPointer = 0
+	Mutex pointerLock = new Mutex()
+	
+	Metadata[] buildMetaForMethod(char method[]) {
+		Metadata metaMethod = new Metadata("method", method)
+		return new Metadata[](metaMethod)
+	}
+
+	void PostsRepository:addPost(store Post newPost) {
+		AddPostParamsFormat params = new AddPostParamsFormat(newPost)
+		char requestBody[] = je.jsonFromData(params)
+		Request req = new Request(buildMetaForMethod("addPost"), requestBody)
+		broadcast(req)
+	}
+
+	void PostsRepository:setPosts(store Post posts[]) {
+		SetPostsParamsFormat params = new SetPostsParamsFormat(posts)
+		char requestBody[] = je.jsonFromData(params)
+		Request req = new Request(buildMetaForMethod("setPosts"), requestBody)
+		broadcast(req)
+	}
+
+	void PostsRepository:likePost(store int postId) {
+		LikePostParamsFormat params = new LikePostParamsFormat(postId)
+		char requestBody[] = je.jsonFromData(params)
+		Request req = new Request(buildMetaForMethod("likePost"), requestBody)
+		anycast(req)
+	}
+
+	Post[] PostsRepository:getPosts() {
+		char requestBody[] = ""
+		Request req = new Request(buildMetaForMethod("getPosts"), requestBody)
+		Response res = anycast(req)
+		return je.jsonToArray(res.content, typeof(Post[]))
+	}
+
+	Post[] PostsRepository:getUserFeed(store int userId) {
+		GetUserFeedParamsFormat params = new GetUserFeedParamsFormat(userId)
+		char requestBody[] = je.jsonFromData(params)
+		Request req = new Request(buildMetaForMethod("getUserFeed"), requestBody)
+		Response res = anycast(req)
+		return je.jsonToArray(res.content, typeof(Post[]))
+	}
+
+	Response broadcast(Request r) {
+		Response res
+		mutex(pointerLock) {
+			for(int i = 0; i < remotes.arrayLength; i++) {
+				connection.connect(remotes[i])
+				res = connection.make(r)
+			}
+
+		}
+
+		return res
+	}
+
+	Response anycast(Request r) {
+		mutex(pointerLock) {
+			int i = addressPointer++ % remotes.arrayLength
+			connection.connect(remotes[i])
+			return connection.make(r)
+		}
+
+	}
+
+	void AdaptEvents:active() {
+		remotes = podCreator.getPodsName(3, "post-repository-replicate-strong")
+		setPosts(posts)
+	}
+
+	void AdaptEvents:inactive() {
+		posts = getPosts()
+		podCreator.deleteAllPods(remotes)
+	}
+
+}
+

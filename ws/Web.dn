@@ -1,51 +1,76 @@
 
-component provides ws.Web requires ws.forms.Parser:multipart formParser, repositories.list.ListRepository repo,
+data CreatePostDTO {
+    int userId
+    char content[]
+}
+
+component provides ws.Web requires ws.forms.Parser:multipart formParser, repositories.posts.PostsRepository repo,
     data.IntUtil iu, io.Output out, composition.RecursiveLoader loader, composition.Adapt adapter,
-    io.Input in {
-    ListRepository repo
+    io.Input in, time.Timer timer, data.StringUtil su, data.json.JSONEncoder je, utils.PodCreatorUtil pods {
+    PostsRepository repo
     LoadedComponents repoComponents[] = new LoadedComponents[](
-        loader.load("repositories/list/ListRepository.o"),
-        loader.load("repositories/list/ListRepository.proxy.replicate.strong.o"),
-        loader.load("repositories/list/ListRepository.proxy.replicate.weak.o")
+        loader.load("repositories/posts/PostsRepository.o"),
+        loader.load("repositories/posts/PostsRepository.proxy.replicate.strong.o"),
+        loader.load("repositories/posts/PostsRepository.proxy.replicate.weak.o")
     )
     String names[] = new String[](
-        new String("ListRepository"),
-        new String("ListRepository with strong replication"), 
-        new String("ListRepository with weak replication")
+        new String("PostsRepository"),
+        new String("PostsRepository with strong replication"), 
+        new String("PostsRepository with weak replication")
+    )
+    String remoteNames[] = new String[](
+        new String("post-repository"),
+        new String("post-repository-replicate-strong"),
+        new String("post-repository-replicate-weak")
     )
     int lastComponentIndex = 0
     Mutex lock = new Mutex()
+    int id = 1
 
     void Web:setup() {
-        repo = new ListRepository() from repoComponents[lastComponentIndex].mainComponent
-        asynch::changeRepo(2) // start with weak replication
-        // asynch::changeProxy()
+        repo = new PostsRepository() from repoComponents[lastComponentIndex].mainComponent
+        asynch::changeProxy()
         out.println("Server started on por 8080")
     }
 
+    //Experiment: every minute change the repository implementation
     void changeProxy() {
-        int instruction = 0
-        while(instruction != repoComponents.arrayLength) {
-            printOptions()
-            char userInput[] = in.readln()
-            instruction = iu.intFromString(userInput)
+        timer.sleep(15000)// initial wait of litte more than 25s
+        for(int instruction = 1; instruction < repoComponents.arrayLength; instruction++) {
             changeRepo(instruction)
+            timer.sleep(15000) // 5s start up + 10s stable
         }
     }
 
+    // local: 15s + 10s init prox | strong: 15s + 10s init prox
     void changeRepo(int option) {
         out.println("Changing repository to $(names[option].string)")
-        mutex(lock) {
-            adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.ListRepository")
-            lastComponentIndex = option
-        }
-    }
+        
+        // if(repoComponents[lastComponentIndex].mainComponent hastype ProxyType) {
+        //     out.println("Deleting old remotes...")
+		//     podCreator.deleteAllPods(repoComponents[lastComponentIndex].mainComponent.remotes)
+        //     // wait 30s to let old remotes shut down
+        //     timer.sleep(30000) 
+        // }
 
-    void printOptions() {
-        out.println("Select one of the options:")
-        for(int i = 0;i < repoComponents.arrayLength; i++) out.println("$(iu.makeString(i)) - $(names[i].string)")
-        out.println("$(iu.makeString(repoComponents.arrayLength)) - quit mode")
-        out.print("option >")
+
+        if(option != 0) {
+            out.println("Creating new remotes...")
+            pods.createPods(3, remoteNames[option].string, "dana-remote")
+            timer.sleep(10000) // wait 10s to let new remotes start up
+        } 
+        // out.println("New remotes created. Adding remotes to new repository...")
+        // PostsRepository nextRepo = new PostsRepository() from repoComponents[option].mainComponent
+        // TypeField remotesType = PostsRepository.[remotes]
+        // nextRepo:.remotesType = remotes
+
+        // processo do proxy - cada proxy deve ter um nome unico dos componentes remotos,
+        // ja que o kubernets nao consegue deletar e criar pods rapido o suficiente
+        // o processo de adaptacao envolve:
+        // Criar pods remotos -> injetar enderecos no proxy -> adaptar o componente para o proxy
+
+        adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.posts.PostsRepository")
+        lastComponentIndex = option
     }
 	
     bool Web:get(char path[], DocStream s){
@@ -53,35 +78,18 @@ component provides ws.Web requires ws.forms.Parser:multipart formParser, reposit
             s.write("Hello!")
             s.sendResponse()
             return true
-        }
-
-        if (path == "/all") {
-            int all[]
-
-            mutex(lock) {
-                all = repo.getList()
-            }
-
-            s.write("[")
-            for (int i = 0; i < all.arrayLength; i++) {
-                s.write("$(iu.makeString(all[i]))")
-                if (i < all.arrayLength - 1) s.write(", ")
-            }
-            s.write("]")
+        } else if (path == "/all") {
+            Post allPosts[]
+            allPosts = repo.getPosts()
+            s.write(je.jsonFromArray(allPosts))
             s.sendResponse()
             return true
-        }
-
-        if (path == "/sum") {
-            int sum = 0
-            mutex(lock) {
-                sum = repo.getSum()
-            }
-
-            s.write("{")
-            s.write("\"sum\": ")
-            s.write("$(iu.makeString(sum))")
-            s.write("}")
+        } else if (su.startsWith(path, "/feed/")) {
+            String pathInfo[] = su.explode(path, "/") // expected: ["feed", "<userId:number>"]
+            int userId = iu.intFromString(pathInfo[1].string)
+            Post userPosts[]
+            userPosts = repo.getUserFeed(userId)
+            s.write(je.jsonFromArray(userPosts))
             s.sendResponse()
             return true
         }
@@ -90,19 +98,25 @@ component provides ws.Web requires ws.forms.Parser:multipart formParser, reposit
     }
 
     bool Web:post(char path[], char contentType[], byte payload[], DocStream s) {
-		if (path == "/add") {
-            FormData form = formParser.parse(contentType, payload)
-            int num
+		if (path == "/post") {
+            char body[] = new char[](payload)
+            
+            CreatePostDTO createPostDTO = je.jsonToData(body, typeof(CreatePostDTO))
 
-            for(int i=0; i < form.fields.arrayLength; i++) {
-                if(form.fields[i].key == "number") num = iu.intFromString(form.fields[i].value)
-            }
-
-            mutex(lock) {
-                repo.append(num)
-            }
+            Post newPost = new Post(id, createPostDTO.userId, 0, createPostDTO.content)
+            repo.addPost(newPost)
+            id++
 
             s.setStatusCode(201, "Created", true)
+            s.sendResponse()
+            return true
+        } else if (su.startsWith(path, "/like/")) {
+            String pathInfo[] = su.explode(path, "/") // expected: ["like", "<postId:number>"]
+            int postId = iu.intFromString(pathInfo[1].string)
+
+            repo.likePost(postId)
+
+            s.setStatusCode(200, "Post on id $(pathInfo[1].string) liked", true)
             s.sendResponse()
             return true
         }

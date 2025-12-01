@@ -1,4 +1,0 @@
-
-interface Adapter {
-    void adaptRepository(opt bool useProxy)
-}

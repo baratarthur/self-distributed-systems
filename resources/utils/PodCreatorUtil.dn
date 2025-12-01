@@ -1,6 +1,7 @@
 uses network.rpc.RPCUtil
 
 interface PodCreatorUtil {
-    Address[] createPods(int numberOfPods, char imageName[])
+    Address[] createPods(int numberOfPods, char componentRemoteName[], char imageName[])
+    Address[] getPodsName(int numberOfPods, char componentRemoteName[])
     bool deleteAllPods(Address addresses[])
 }

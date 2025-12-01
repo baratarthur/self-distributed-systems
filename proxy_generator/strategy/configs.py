@@ -3,7 +3,6 @@ from helpers.write_component_helper import WriteComponentHelper
 strategy_configs = {
     "replicate": {
         "dependencies": [
-            { "lib": "util.Random", "alias": "random" },
             { "lib": "data.json.JSONEncoder", "alias": "je" },
             { "lib": "utils.PodCreatorUtil", "alias": "podCreator" }
         ],
@@ -20,7 +19,7 @@ strategy_configs = {
                     "return res"
                 ]),
                 lambda file: WriteComponentHelper(file).provide_idented_flow("Response anycast(Request r)", [
-                    "int i = random.getInt(remotes.arrayLength)",
+                    "int i = addressPointer++ % remotes.arrayLength",
                     "connection.connect(remotes[i])",
                     "return connection.make(r)"
                 ])
@@ -38,7 +37,7 @@ strategy_configs = {
                 ]),
                 lambda file: WriteComponentHelper(file).provide_idented_flow("Response anycast(Request r)", [
                      WriteComponentHelper(file).provide_idented_flow("mutex(pointerLock)", [
-                        "int i = random.getInt(remotes.arrayLength)",
+                        "int i = addressPointer++ % remotes.arrayLength",
                         "connection.connect(remotes[i])",
                         "return connection.make(r)"
                     ])

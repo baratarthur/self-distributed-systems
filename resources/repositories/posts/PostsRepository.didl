@@ -1,0 +1,48 @@
+{
+    "outputFolder": "repositories/posts",
+    "remoteName": "post-repository",
+    "componentFile": "repositories/posts/PostsRepository.dn",
+    "dependencies": [
+        { "lib": "network.rpc.RPCUtil", "alias": "connection" },
+        { "lib": "data.IntUtil", "alias": "iu" },
+        { "lib": "utils.IntArrayUtil", "alias": "iau" }
+    ],
+    "attributes": {
+        "posts": {"type": "Post[]", "calculateWith": "setPosts"}
+    },
+    "methods": {
+        "addPost": {
+            "returnType": "void",
+            "parameters": [
+                {"name": "newPost", "type": "Post", "store": true}
+            ]
+        },
+        "setPosts": {
+            "returnType": "void",
+            "parameters": [
+                {"name": "posts", "type": "Post[]", "store": true}
+            ]
+        },
+        "likePost": {
+            "returnType": "void",
+            "parameters": [
+                {"name": "postId", "type": "int", "store": true}
+            ]
+        },
+        "getPosts": {
+            "returnType": "Post[]",
+            "returnParser": "je.jsonToArray({}, typeof(Post[]))",
+            "remoteReturnParser": "je.jsonFromArray({})",
+            "parameters": []
+        },
+        "getUserFeed": {
+            "returnType": "Post[]",
+            "returnParser": "je.jsonToArray({}, typeof(Post[]))",
+            "remoteReturnParser": "je.jsonFromArray({})",
+            "parameters": [
+                {"name": "userId", "type": "int", "store": true}
+            ]
+        }
+        
+    }
+}

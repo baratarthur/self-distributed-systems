@@ -1,6 +1,6 @@
 const int DEFAULT_DIST_PORT = 8081
 
-component provides App requires data.IntUtil iu, remotes.Remote:listrepository service {
+component provides App requires data.IntUtil iu, remotes.Remote:postsrepository service {
     int portDist = 0
 
     int App:main(AppParam params[]) {

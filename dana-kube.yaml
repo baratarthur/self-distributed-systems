@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: dana-main
-        image: dana-main:v3
+        image: dana-main:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -54,7 +54,7 @@ spec:
       serviceAccountName: pod-creator-sa
       containers:
       - name: webservice
-        image: pod-creator-webservice:v1
+        image: pod-creator-webservice:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5001
@@ -69,7 +69,7 @@ kind: Service
 metadata:
   name: pod-creator-service
 spec:
-  type: ClusterIP # Alterado de NodePort para ClusterIP
+  type: ClusterIP
   selector:
     app: pod-creator
   ports:
@@ -92,6 +92,103 @@ spec:
     - podSelector:
         matchLabels:
           app: dana-main
+    - podSelector:
+        matchLabels:
+          app: k6-load-tester
     ports:
     - protocol: TCP
       port: 5001
+---
+# 1. Script do k6
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-test-script
+data:
+  test.js: |
+    import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+    import http from 'k6/http';
+    import exec from 'k6/execution';
+    import { check, sleep, randomSeed } from 'k6';
+
+    export const options = {
+        stages: [
+          { duration: '1s', target: 2 },
+          { duration: '75s', target: 10 },
+        ],
+    };
+
+    export default function () {
+      const apiUrl = 'http://dana-main-service:8080/';
+      const userId = exec.vu.idInInstance;
+
+      // user creates a post
+      const randomChanceToPost = randomIntBetween(1, 100);
+      if(randomChanceToPost <= 15) { // 15% chance to create a post
+        console.log(`VU ${userId}: ENTREI NO IF. Tentando criar FormData...`); // LOG 1
+        
+        try {
+            console.log(`VU ${userId}: FormData criado. Enviando POST...`); // LOG 2
+
+            const resCreatePost = http.post(
+              apiUrl + 'post',
+              JSON.stringify({'userId': userId.toString(), 'content': 'teste de post'}),
+              {
+                headers: {'Content-Type': 'application/json'},
+                tags: { name: 'CreatePost' }
+              }
+            );
+            
+            console.log(`VU ${userId}: POST enviado. Status: ${resCreatePost.status}`); // LOG 3
+            
+            check(resCreatePost, { 'status was 201': (r) => r.status == 201 });
+        } catch (e) {
+            console.error(`VU ${userId}: ERRO CRÍTICO dentro do IF: ` + e); // VAI MOSTRAR O ERRO REAL
+        }
+      }
+      
+      // user fetches the main feed
+      const resGetFeed = http.get(apiUrl + 'feed/' + userId.toString(), { tags: { name: 'GetFeed' } });
+      check(resGetFeed, { 'status was 200': (r) => r.status == 200 });
+
+      // if feed > 2 posts, user likes a random post
+      // const feed = resGetFeed.json();
+      // if (feed.length > 2) {
+      //   const randomPost = feed[Math.floor(Math.random() * feed.length)];
+      //   const resLikePost = http.post(apiUrl + 'like/' + randomPost.id, {}, { tags: { name: 'LikePost' } });
+      //   check(resLikePost, { 'status was 200': (r) => r.status == 200 });
+      // }
+      
+      sleep(1);
+    }
+---
+# 2. O Job que roda o k6 (CORRIGIDO)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-job
+  labels:
+    app: k6-load-tester
+spec:
+  template:             # Adicionado
+    metadata:
+      labels:
+        app: k6-load-tester
+    spec:               # Adicionado
+      containers:
+      - name: k6
+        image: grafana/k6:latest
+        command: ["sh", "-c", "k6 run /scripts/test.js --out csv=/results/data.csv && echo 'Teste finalizado. Dormindo...' && sleep 600"]
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+        - name: results-volume
+          mountPath: /results
+      restartPolicy: Never
+      volumes:
+      - name: script-volume
+        configMap:
+          name: k6-test-script
+      - name: results-volume
+        emptyDir: {}
