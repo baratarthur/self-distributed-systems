@@ -1,9 +1,8 @@
 {
 	"outputFolder": "repositories/list",
+    "remoteName": "list-repository",
     "componentFile": "repositories/list/ListRepository.dn",
-    "allow": "consistent",
     "dependencies": [
-        { "lib": "network.rpc.RPCUtil", "alias": "connection" },
         { "lib": "data.IntUtil", "alias": "iu" },
         { "lib": "utils.IntArrayUtil", "alias": "iau" }
     ],

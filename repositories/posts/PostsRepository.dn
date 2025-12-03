@@ -1,4 +1,5 @@
 const char debugMSG[] = "[@PostsRepository]"
+const int PAGINATION_SIZE = 10
 
 component provides repositories.posts.PostsRepository {
     void PostsRepository:addPost(store Post newPost) {
@@ -24,7 +25,7 @@ component provides repositories.posts.PostsRepository {
 
     Post[] PostsRepository:getUserFeed(store int userId) {
         Post userPosts[] = new Post[]()
-        for (int i = 0; i < posts.arrayLength; i++) {
+        for (int i = 0; i < posts.arrayLength && userPosts.arrayLength <= PAGINATION_SIZE; i++) {
             if (posts[i].userId != userId) {
                 userPosts = new Post[](userPosts, posts[i])
             }

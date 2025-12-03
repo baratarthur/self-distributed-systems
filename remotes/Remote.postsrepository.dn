@@ -3,7 +3,7 @@ uses utils.Constants
 const char debugMSG[] = "[@Remote]"
 
 
-component provides remotes.Remote:postsrepository requires net.TCPSocket, net.TCPServerSocket, io.Output out, data.json.JSONEncoder je, network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, network.rpc.RPCUtil connection, repositories.posts.PostsRepository remoteComponent {
+component provides remotes.Remote:postsrepository requires net.TCPSocket, net.TCPServerSocket, io.Output out, data.json.JSONEncoder je, data.IntUtil iu, utils.IntArrayUtil iau, network.rpc.RPCUtil connection, repositories.posts.PostsRepository remoteComponent {
 	bool serviceStatus = false
 	
 

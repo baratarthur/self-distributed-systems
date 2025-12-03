@@ -1,6 +1,6 @@
 
 
-component provides repositories.list.ListRepository(AdaptEvents) requires network.rpc.RPCUtil connection, data.IntUtil iu, utils.IntArrayUtil iau, data.json.JSONEncoder je, utils.PodCreatorUtil podCreator {
+component provides repositories.list.ListRepository(AdaptEvents) requires data.IntUtil iu, utils.IntArrayUtil iau, network.rpc.RPCUtil rpcUtil, data.json.JSONEncoder je, utils.PodCreatorUtil podCreator {
 	Address remotes[] = new Address[]
 	int addressPointer = 0
 	Mutex pointerLock = new Mutex()
@@ -35,8 +35,8 @@ component provides repositories.list.ListRepository(AdaptEvents) requires networ
 		Response res
 		mutex(pointerLock) {
 			for(int i = 0; i < remotes.arrayLength; i++) {
-				connection.connect(remotes[i])
-				res = connection.make(r)
+				RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)
+				res = rpcUtil.make(reqWrapper)
 			}
 
 		}
@@ -46,12 +46,12 @@ component provides repositories.list.ListRepository(AdaptEvents) requires networ
 
 	Response anycast(Request r) {
 		int i = addressPointer++ % remotes.arrayLength
-		connection.connect(remotes[i])
-		return connection.make(r)
+		RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)
+		return rpcUtil.make(reqWrapper)
 	}
 
 	void AdaptEvents:active() {
-		remotes = podCreator.getPodsName(3, "dana-remote-replicate-weak")
+		remotes = podCreator.getPodsName(3, "list-repository-replicate-weak")
 		for(int i = 0; i < list.arrayLength; i++){
 			append(list[i])
 		}

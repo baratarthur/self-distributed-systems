@@ -1,14 +1,16 @@
 #!/bin/bash
+minikube delete
+minikube start --cpus=6 --memory=2048mb --driver=docker
 # 1-> app version, 2 -> experiment round
 source ./build/compile.sh
 source ./build/build-minikube.sh
 echo "App version $1 built."
 echo "Running experiment round $1 ..."
-sleep 26s
+sleep 30s
 echo "33% finished ..."
-sleep 25s
+sleep 30s
 echo "66% finished ..."
-sleep 25s
+sleep 30s
 echo "99% finished ..."
 sleep 3s
 echo "Experiment round $1 finished."

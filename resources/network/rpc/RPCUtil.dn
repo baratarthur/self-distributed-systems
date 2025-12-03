@@ -15,6 +15,11 @@ data TransactionData {
     char value[]
 }
 
+data RequestWrapper {
+    Address to
+    Request r
+}
+
 data Request {
     Metadata meta[]
     char content[]
@@ -26,8 +31,7 @@ data Response {
 }
 
 interface RPCUtil {
-    bool connect(Address a)
-    Response make(Request r)
+    Response make(RequestWrapper r)
     Request parseRequestFromString(char requestString[])
     char[] receiveData(TCPSocket s)
     char[] buildRawResponse(Response r)

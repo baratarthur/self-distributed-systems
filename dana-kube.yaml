@@ -136,7 +136,8 @@ data:
               JSON.stringify({'userId': userId.toString(), 'content': 'teste de post'}),
               {
                 headers: {'Content-Type': 'application/json'},
-                tags: { name: 'CreatePost' }
+                tags: { name: 'CreatePost' },
+                timeout: '5s',
               }
             );
             
@@ -149,7 +150,7 @@ data:
       }
       
       // user fetches the main feed
-      const resGetFeed = http.get(apiUrl + 'feed/' + userId.toString(), { tags: { name: 'GetFeed' } });
+      const resGetFeed = http.get(apiUrl + 'feed/' + userId.toString(), { tags: { name: 'GetFeed' }, timeout: '5s' });
       check(resGetFeed, { 'status was 200': (r) => r.status == 200 });
 
       // if feed > 2 posts, user likes a random post

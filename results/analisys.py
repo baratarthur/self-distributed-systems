@@ -1,167 +1,81 @@
-import sys
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 
-# --- CONFIGURAÇÃO ESTÉTICA (Mantida para Artigo Científico) ---
-plt.rcParams.update({
-    "font.family": "serif",
-    "font.serif": ["Times New Roman"],
-    "font.size": 12,
-    "axes.labelsize": 12,
-    "axes.titlesize": 14,
-    "legend.fontsize": 10,
-    "figure.dpi": 300,
-    "lines.linewidth": 1.5
-})
+# --- CONFIGURAÇÃO ---
+FILE_PATH = 'results/results_round1.csv'
 
-def processar_dados_k6_json(file_path):
-    print("Carregando dados JSON (isso pode levar alguns instantes)...")
-    
-    # Lê o arquivo JSON onde cada linha é um objeto independente
-    try:
-        df_raw = pd.read_json(file_path, lines=True)
-    except ValueError:
-        print("Erro ao ler JSON. Verifique se o arquivo está no formato correto (NDJSON).")
-        return pd.DataFrame()
+# --- 1. CARREGAMENTO E PREPARAÇÃO ---
+print(f"Carregando dados de {FILE_PATH}...")
+try:
+    df = pd.read_csv(FILE_PATH)
+except FileNotFoundError:
+    print("Erro: Arquivo não encontrado.")
+    exit()
 
-    # O k6 gera muitos tipos de métricas (Point, Metric, etc). Queremos apenas os 'Point'
-    df = df_raw[df_raw['type'] == 'Point'].copy()
+# Calcular tempo decorrido
+start_time = df['timestamp'].min()
+df['elapsed'] = df['timestamp'] - start_time
 
-    # O JSON do k6 aninha os valores dentro de 'data'. 
-    # Estrutura típica: {'metric': 'http_req_duration', 'data': {'time': '...', 'value': 123, 'tags': {...}}}
-    
-    # Extração otimizada dos dados aninhados
-    # Criamos colunas planas para facilitar a plotagem
-    print("Processando e normalizando dados...")
-    
-    # Extraindo timestamp e valor
-    df['timestamp'] = df['data'].apply(lambda x: x.get('time'))
-    df['metric_value'] = df['data'].apply(lambda x: x.get('value'))
-    
-    # Extraindo a tag 'name' (fundamental para saber qual requisição é qual)
-    # A estrutura é data -> tags -> name
-    df['name'] = df['data'].apply(lambda x: x.get('tags', {}).get('name', 'Outros'))
-    
-    # Renomear coluna 'metric' para 'metric_name' para manter compatibilidade
-    df.rename(columns={'metric': 'metric_name'}, inplace=True)
+# Classificar Fases
+def classificar_fase(segundos):
+    if segundos < 25:
+        return '1. Monolith'
+    elif segundos < 50:
+        return '2. Strong Dist.'
+    else:
+        return '3. Weak Dist.'
 
-    # Converter timestamp para datetime
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    
-    # Limpeza: remover colunas originais pesadas
-    df_clean = df[['timestamp', 'metric_name', 'metric_value', 'name']].copy()
-    
-    return df_clean
+df['fase'] = df['elapsed'].apply(classificar_fase)
 
-def gerar_grafico_latencia(df):
-    print("Gerando gráfico de latência...")
-    
-    # Filtrar apenas a duração das requisições HTTP
-    df_lat = df[df['metric_name'] == 'http_req_duration'].copy()
-    
-    if df_lat.empty:
-        print("Aviso: Nenhuma métrica 'http_req_duration' encontrada.")
-        return
+# --- 2. FILTRAGEM ---
+# Usamos 'http_reqs' para contar requisições (métricas de contador)
+df_reqs = df[df['metric_name'] == 'http_reqs'].copy()
 
-    # Remover outliers extremos (acima de 99%) para limpar o gráfico
-    q99 = df_lat['metric_value'].quantile(0.99)
-    df_lat = df_lat[df_lat['metric_value'] < q99]
+# --- GRÁFICO 1: GET vs POST por Fase ---
+# Agrupar dados
+counts = df_reqs.groupby(['fase', 'method'])['metric_value'].count().unstack(fill_value=0)
 
-    # Reamostragem (Resample)
-    df_lat.set_index('timestamp', inplace=True)
-    
-    # Agrupa por Nome da Requisição e calcula o P95 a cada 5 segundos
-    df_resampled = df_lat.groupby('name')['metric_value'].resample('5s').quantile(0.95).reset_index()
+plt.figure(figsize=(10, 6))
+# Plotar barras agrupadas
+counts.plot(kind='bar', stacked=False, color=['#3498db', '#e74c3c'], width=0.8)
 
-    # Plot
-    plt.figure(figsize=(10, 6))
-    sns.set_style("whitegrid") 
-    
-    sns.lineplot(
-        data=df_resampled, 
-        x='timestamp', 
-        y='metric_value', 
-        hue='name', 
-        style='name', 
-        markers=False, 
-        dashes=True
-    )
+plt.title('Total de Requests (GET vs POST) por Fase', fontsize=14)
+plt.ylabel('Quantidade de Requests', fontsize=12)
+plt.xlabel('Fase do Teste', fontsize=12)
+plt.xticks(rotation=0)
+plt.grid(axis='y', linestyle='--', alpha=0.5)
+plt.legend(title='Método HTTP')
+plt.tight_layout()
+plt.savefig('grafico_metodos_fase.png')
+print("Gráfico 1 salvo: grafico_metodos_fase.png")
 
-    plt.title("Latência de Requisição (P95)")
-    plt.xlabel("Tempo de Execução")
-    plt.ylabel("Latência (ms)")
-    plt.legend(title="Operação")
-    plt.tight_layout()
-    
-    plt.savefig('fig1_latencia_json.pdf', format='pdf', bbox_inches='tight')
-    print("Gráfico de latência salvo (PDF).")
+# --- GRÁFICO 2: Throughput (RPS) ao Longo do Tempo ---
+# Agrupar por segundo (arredondando o tempo decorrido)
+df_reqs['segundo_exato'] = df_reqs['elapsed'].astype(int)
+throughput = df_reqs.groupby('segundo_exato')['metric_value'].count()
 
-def gerar_grafico_leitura_escrita(df):
-    print("Gerando gráfico de Leitura/Escrita...")
-    
-    # Usamos a métrica de duração para contar quantas requisições ocorreram
-    df_reqs = df[df['metric_name'] == 'http_req_duration'].copy()
-    
-    if df_reqs.empty:
-        return
+plt.figure(figsize=(14, 6))
 
-    # Lógica de Categorização
-    def categorizar(nome):
-        nome = str(nome)
-        if 'GetFeed' in nome:
-            return 'Leitura (Read)'
-        elif 'CreatePost' in nome or 'LikePost' in nome:
-            return 'Escrita (Write)'
-        return None # Ignora 'Outros' ou requisições sem tag
+# Plotar linha de RPS
+plt.plot(throughput.index, throughput.values, color='#8e44ad', linewidth=2, label='RPS (Req/s)')
+# Preencher área sob a curva para melhor visualização
+plt.fill_between(throughput.index, throughput.values, color='#8e44ad', alpha=0.1)
 
-    df_reqs['tipo_operacao'] = df_reqs['name'].apply(categorizar)
-    
-    # Remover nulos (tags que não nos interessam)
-    df_reqs = df_reqs.dropna(subset=['tipo_operacao'])
-    
-    # Contagem percentual
-    contagem = df_reqs['tipo_operacao'].value_counts(normalize=True) * 100
-    df_plot = contagem.reset_index()
-    df_plot.columns = ['Operação', 'Porcentagem']
-    
-    # Plot
-    plt.figure(figsize=(6, 6))
-    sns.set_style("whitegrid")
-    
-    ax = sns.barplot(x='Operação', y='Porcentagem', data=df_plot, palette="Greys_d", edgecolor="black")
-    
-    for p in ax.patches:
-        ax.annotate(f'{p.get_height():.1f}%', 
-                   (p.get_x() + p.get_width() / 2., p.get_height()), 
-                   ha = 'center', va = 'center', 
-                   xytext = (0, 9), 
-                   textcoords = 'offset points')
+# Marcar as fases no fundo
+ymax = throughput.max() * 1.1
+plt.ylim(0, ymax)
+plt.axvspan(0, 25, color='gray', alpha=0.1, label='Monolith (0-25s)')
+plt.axvspan(25, 50, color='green', alpha=0.1, label='Strong Dist. (25-50s)')
+plt.axvspan(50, df['elapsed'].max(), color='orange', alpha=0.1, label='Weak Dist. (50s+)')
 
-    plt.title("Proporção: Leitura vs. Escrita")
-    plt.ylabel("Total de Requisições (%)")
-    plt.ylim(0, 110)
-    plt.tight_layout()
-    
-    plt.savefig('fig2_rw_json.pdf', format='pdf', bbox_inches='tight')
-    print("Gráfico de distribuição salvo (PDF).")
+plt.title('Throughput (Requests por Segundo) durante o Teste', fontsize=14)
+plt.ylabel('RPS', fontsize=12)
+plt.xlabel('Tempo de Teste (s)', fontsize=12)
+plt.legend(loc='upper left')
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.savefig('grafico_throughput.png')
+print("Gráfico 2 salvo: grafico_throughput.png")
 
-# --- EXECUÇÃO ---
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Uso: python script.py <numero_do_round>")
-        sys.exit(1)
-
-    round_arg = sys.argv[1]
-    ARQUIVO = f'results/results_round{round_arg}.json' # Nome do arquivo gerado pelo k6
-    
-    try:
-        dados = processar_dados_k6_json(ARQUIVO)
-        gerar_grafico_latencia(dados)
-        gerar_grafico_leitura_escrita(dados)
-        print("Processo concluído com sucesso.")
-    except FileNotFoundError:
-        print(f"Erro: Arquivo '{ARQUIVO}' não encontrado.")
-    except Exception as e:
-        print(f"Ocorreu um erro: {e}")
+plt.show()

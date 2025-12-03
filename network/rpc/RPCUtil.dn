@@ -4,37 +4,39 @@ const char debugMSG[] = "[@RPCUtil]"
 
 component provides network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
     data.IntUtil iu, data.StringUtil su {
-    TCPSocket connectionSocket = null
 
-    bool RPCUtil:connect(Address a) {
-        connectionSocket = new TCPSocket()
-        return connectionSocket.connect(a.name, a.port)
-    }
+    // TCPSocket RPCUtil:connect(Address a) {
+    //     TCPSocket connectionSocket = new TCPSocket()
+    //     connectionSocket.connect(a.name, a.port)
+    //     return connectionSocket
+    // }
 
-    Response RPCUtil:make(Request req) {
+    Response RPCUtil:make(RequestWrapper req) {
         Response r = null
         char requestContent[] = null
 
-        if (req.content != null) {
+        if (req.r.content != null) {
             requestContent = new char[](
-                je.jsonFromArray(req.meta),
+                je.jsonFromArray(req.r.meta),
                 Constants.SEPARATOR,
-                req.content
+                req.r.content
             )
             out.println("$debugMSG - raw request - $requestContent")
         } else {
-            requestContent = je.jsonFromArray(req.meta)
+            requestContent = je.jsonFromArray(req.r.meta)
         }
+
+        TCPSocket connection = new TCPSocket()
+        connection.connect(req.to.name, req.to.port)
         
         requestContent = new char[](requestContent, Constants.EOF)
-        out.println("$debugMSG - is socket connectd - $(connectionSocket.connected())")
-        connectionSocket.send(requestContent)
-        char responseContent[] = receiveData(connectionSocket)
+        connection.send(requestContent)
+        char responseContent[] = receiveData(connection)
         String json[] = su.explode(responseContent, Constants.SEPARATOR)
         Metadata meta[] = je.jsonToArray(json[0].string, typeof(Metadata[]))
         if(json.arrayLength > 1) r = new Response(meta, json[1].string)
         else r = new Response(meta)
-        connectionSocket.disconnect()
+        connection.disconnect()
         return r
     }
 

@@ -3,7 +3,6 @@
     "remoteName": "post-repository",
     "componentFile": "repositories/posts/PostsRepository.dn",
     "dependencies": [
-        { "lib": "network.rpc.RPCUtil", "alias": "connection" },
         { "lib": "data.IntUtil", "alias": "iu" },
         { "lib": "utils.IntArrayUtil", "alias": "iau" }
     ],

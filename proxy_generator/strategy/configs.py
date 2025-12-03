@@ -3,6 +3,7 @@ from helpers.write_component_helper import WriteComponentHelper
 strategy_configs = {
     "replicate": {
         "dependencies": [
+            { "lib": "network.rpc.RPCUtil", "alias": "rpcUtil" },
             { "lib": "data.json.JSONEncoder", "alias": "je" },
             { "lib": "utils.PodCreatorUtil", "alias": "podCreator" }
         ],
@@ -12,16 +13,16 @@ strategy_configs = {
                     "Response res",
                     WriteComponentHelper(file).provide_idented_flow("mutex(pointerLock)", [
                         WriteComponentHelper(file).provide_idented_flow("for(int i = 0; i < remotes.arrayLength; i++)", [
-                            "connection.connect(remotes[i])",
-                            "res = connection.make(r)"
+                            "RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)",
+                            "res = rpcUtil.make(reqWrapper)"
                         ])
                     ]),
                     "return res"
                 ]),
                 lambda file: WriteComponentHelper(file).provide_idented_flow("Response anycast(Request r)", [
                     "int i = addressPointer++ % remotes.arrayLength",
-                    "connection.connect(remotes[i])",
-                    "return connection.make(r)"
+                    "RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)",
+                    "return rpcUtil.make(reqWrapper)"
                 ])
             ],
             "strong": [
@@ -29,8 +30,8 @@ strategy_configs = {
                     "Response res",
                     WriteComponentHelper(file).provide_idented_flow("mutex(pointerLock)", [
                         WriteComponentHelper(file).provide_idented_flow("for(int i = 0; i < remotes.arrayLength; i++)", [
-                            "connection.connect(remotes[i])",
-                            "res = connection.make(r)"
+                            "RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)",
+                            "res = rpcUtil.make(reqWrapper)"
                         ])
                     ]),
                     "return res"
@@ -38,8 +39,8 @@ strategy_configs = {
                 lambda file: WriteComponentHelper(file).provide_idented_flow("Response anycast(Request r)", [
                      WriteComponentHelper(file).provide_idented_flow("mutex(pointerLock)", [
                         "int i = addressPointer++ % remotes.arrayLength",
-                        "connection.connect(remotes[i])",
-                        "return connection.make(r)"
+                        "RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)",
+                        "return rpcUtil.make(reqWrapper)"
                     ])
                 ])
             ]
