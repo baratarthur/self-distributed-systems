@@ -1,3 +1,4 @@
+uses utils.Constants
 
 data CreatePostDTO {
     int userId
@@ -48,7 +49,7 @@ component provides ws.Web requires ws.forms.Parser:multipart formParser, reposit
 
         if(option != 0) {
             out.println("Creating new remotes...")
-            pods.createPods(3, remoteNames[option].string, "dana-remote")
+            pods.createPods(Constants.NUMBER_OF_REMOTES, remoteNames[option].string, "dana-remote")
             timer.sleep(10000) // wait 10s to let new remotes start up
         }
 

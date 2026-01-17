@@ -1,5 +1,6 @@
 
 interface Constants {
+    const int NUMBER_OF_REMOTES = 3
     const char ADD[] = "add"
     const char REMOVE[] = "remove"
     const char GET[] = "get"

@@ -9,7 +9,7 @@ POD_NAME=$(kubectl get pods -l app=k6-load-tester -o jsonpath="{.items[0].metada
 
 # 3. Copia (O pod precisa estar rodando o comando sleep agora)
 echo "Copiando do pod: $POD_NAME"
-kubectl cp $POD_NAME:/results/data.csv ./results/results_round$1.csv
+kubectl cp $POD_NAME:/results/data.csv ./results/$2/results_round$1.csv
 
 # 4. (Opcional) Mata o pod manualmente se não quiser esperar o sleep acabar
 kubectl delete pod $POD_NAME

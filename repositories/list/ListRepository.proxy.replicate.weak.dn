@@ -1,3 +1,4 @@
+uses utils.Constants
 
 
 component provides repositories.list.ListRepository(AdaptEvents) requires data.IntUtil iu, utils.IntArrayUtil iau, network.rpc.RPCUtil rpcUtil, data.json.JSONEncoder je, utils.PodCreatorUtil podCreator {
@@ -51,7 +52,7 @@ component provides repositories.list.ListRepository(AdaptEvents) requires data.I
 	}
 
 	void AdaptEvents:active() {
-		remotes = podCreator.getPodsName(3, "list-repository-replicate-weak")
+		remotes = podCreator.getPodsName(Constants.NUMBER_OF_REMOTES, "list-repository-replicate-weak")
 		for(int i = 0; i < list.arrayLength; i++){
 			append(list[i])
 		}

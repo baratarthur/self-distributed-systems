@@ -1,3 +1,4 @@
+uses utils.Constants
 
 
 component provides repositories.posts.PostsRepository(AdaptEvents) requires data.IntUtil iu, utils.IntArrayUtil iau, network.rpc.RPCUtil rpcUtil, data.json.JSONEncoder je, utils.PodCreatorUtil podCreator {
@@ -69,7 +70,7 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires data
 	}
 
 	void AdaptEvents:active() {
-		remotes = podCreator.getPodsName(3, "post-repository-replicate-strong")
+		remotes = podCreator.getPodsName(Constants.NUMBER_OF_REMOTES, "post-repository-replicate-strong")
 		setPosts(posts)
 	}
 
