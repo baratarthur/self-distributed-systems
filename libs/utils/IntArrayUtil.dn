@@ -1,4 +1,4 @@
-component provides utils.IntArrayUtil requires data.IntUtil iu, data.StringUtil su, io.Output out {
+component provides libs.utils.IntArrayUtil requires data.IntUtil iu, data.StringUtil su, io.Output out {
     int[] IntArrayUtil:getIntListFromString(char s[]) {
         int numsValue[] = new int[]()
         char onlyNumbers[] = su.subString(s, 1, s.arrayLength - 2)

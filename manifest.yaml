@@ -1,40 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pod-creator-deployment
+  name: dana-main
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: pod-creator
+      app: dana-main
   template:
     metadata:
       labels:
-        app: pod-creator
+        app: dana-main
     spec:
-      serviceAccountName: pod-creator-sa
       containers:
-      - name: webservice
-        image: pod-creator-webservice:latest
+      - name: dana-main
+        image: dana-main:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 5001
+        - containerPort: 8080
         env:
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: pod-creator-service
+  name: dana-main-service
 spec:
   type: NodePort
   selector:
-    app: pod-creator
+    app: dana-main
   ports:
   - protocol: TCP
-    port: 5001
-    targetPort: 5001
+    port: 8080
+    targetPort: 8080

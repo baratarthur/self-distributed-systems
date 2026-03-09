@@ -1,8 +1,11 @@
+uses time.DateUtil
+
 data Post {
     int id
     int userId
     int likes
     char content[]
+    DateTime ttl // Time to live in miliseconds, for cache eviction
 }
 
 data ReceivePostDTO {
@@ -26,12 +29,16 @@ data GetUserFeedParamsFormat {
     int userId
 }
 
+data GetPostByIdParamsFormat {
+    int postId
+}
+
 interface PostsRepository {
     transfer Post posts[]
 
     void addPost(store Post newPost)
     void likePost(store int postId)
-    void setPosts(store Post posts[])
+    Post getPostById(store int postId)
     Post[] getPosts()
     Post[] getUserFeed(store int userId)
 }

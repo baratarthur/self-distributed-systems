@@ -1,7 +1,7 @@
-uses utils.Constants
+uses libs.utils.Constants
 
 
-component provides repositories.posts.PostsRepository(AdaptEvents) requires data.IntUtil iu, utils.IntArrayUtil iau, network.rpc.RPCUtil rpcUtil, data.json.JSONEncoder je, utils.PodCreatorUtil podCreator {
+component provides repositories.posts.PostsRepository(AdaptEvents) requires time.Timer timer, libs.network.rpc.RPCUtil rpcUtil, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah {
 	Address remotes[] = new Address[]
 	int addressPointer = 0
 	Mutex pointerLock = new Mutex()
@@ -15,14 +15,7 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires data
 		AddPostParamsFormat params = new AddPostParamsFormat(newPost)
 		char requestBody[] = je.jsonFromData(params)
 		Request req = new Request(buildMetaForMethod("addPost"), requestBody)
-		broadcast(req)
-	}
-
-	void PostsRepository:setPosts(store Post posts[]) {
-		SetPostsParamsFormat params = new SetPostsParamsFormat(posts)
-		char requestBody[] = je.jsonFromData(params)
-		Request req = new Request(buildMetaForMethod("setPosts"), requestBody)
-		broadcast(req)
+		anycast(req)
 	}
 
 	void PostsRepository:likePost(store int postId) {
@@ -30,6 +23,14 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires data
 		char requestBody[] = je.jsonFromData(params)
 		Request req = new Request(buildMetaForMethod("likePost"), requestBody)
 		anycast(req)
+	}
+
+	Post PostsRepository:getPostById(store int postId) {
+		GetPostByIdParamsFormat params = new GetPostByIdParamsFormat(postId)
+		char requestBody[] = je.jsonFromData(params)
+		Request req = new Request(buildMetaForMethod("getPostById"), requestBody)
+		Response res = anycast(req)
+		return je.jsonToData(res.content, typeof(Post))
 	}
 
 	Post[] PostsRepository:getPosts() {
@@ -70,13 +71,11 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires data
 	}
 
 	void AdaptEvents:active() {
-		remotes = podCreator.getPodsName(Constants.NUMBER_OF_REMOTES, "post-repository-replicate-strong")
-		setPosts(posts)
+		remotes = ah.getAddresses("post-repository-replicate-strong")
 	}
 
 	void AdaptEvents:inactive() {
-		posts = getPosts()
-		podCreator.deleteAllPods(remotes)
+		ah.removeAllFrom("post-repository-replicate-strong")
 	}
 
 }

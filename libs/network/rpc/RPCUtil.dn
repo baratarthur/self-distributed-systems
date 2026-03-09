@@ -1,8 +1,8 @@
-uses utils.Constants
+uses libs.utils.Constants
 
 const char debugMSG[] = "[@RPCUtil]"
 
-component provides network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
+component provides libs.network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
     data.IntUtil iu, data.StringUtil su {
 
     // TCPSocket RPCUtil:connect(Address a) {

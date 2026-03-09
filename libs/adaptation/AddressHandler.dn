@@ -1,0 +1,28 @@
+component provides libs.adaptation.AddressHandler {
+    void AddressHandler:addAddressesInNamespace(Address a[], char namespace[]) {
+        for (int i = 0; i < a.arrayLength; i++) {
+            NamespacedAddress newAddress = new NamespacedAddress(namespace, a[i])
+            allRemotes = new NamespacedAddress[](allRemotes, newAddress)
+        }
+    }
+
+    void AddressHandler:removeAllFrom(char namespace[]) {
+        NamespacedAddress result[] = new NamespacedAddress[]()
+        for(int i = 0; i < allRemotes.arrayLength; i++) {
+            if (allRemotes[i].namespace != namespace) {
+                result = new NamespacedAddress[](result, allRemotes[i])
+            }
+        }
+        allRemotes = result
+    }
+
+    Address[] AddressHandler:getAddresses(char namespace[]) {
+        Address result[] = new Address[]()
+        for(int i = 0; i < allRemotes.arrayLength; i++) {
+            if (allRemotes[i].namespace == namespace) {
+                result = new Address[](result, allRemotes[i].address)
+            }
+        }
+        return result
+    }
+}

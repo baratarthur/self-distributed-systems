@@ -1,0 +1,10 @@
+#!/bin/bash
+# accepts $1 as version number on tag
+# source ./scripts/build/build-minikube-pod_creator.sh
+source ./scripts/build/build-minikube-main.sh
+source ./scripts/build/build-minikube-remote.sh
+echo "Re-deploying Dana in Minikube..."
+# kubectl delete -f ./dana-kube.yaml
+# echo "dana deleted."
+echo "Re-deploying dana..."
+kubectl apply -f ./manifest.yaml

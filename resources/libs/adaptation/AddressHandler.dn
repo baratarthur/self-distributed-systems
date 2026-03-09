@@ -1,0 +1,14 @@
+uses libs.network.rpc.RPCUtil
+
+data NamespacedAddress {
+    char namespace[]
+    Address address
+}
+
+interface AddressHandler {
+    transfer NamespacedAddress allRemotes[]
+
+    void addAddressesInNamespace(Address a[], char namespace[])
+    void removeAllFrom(char namespace[])
+    Address[] getAddresses(char namespace[])
+}

@@ -1,9 +1,80 @@
+uses libs.utils.Constants
+uses libs.utils.DatabaseConfig
+
 const char debugMSG[] = "[@PostsRepository]"
 const int PAGINATION_SIZE = 10
 
-component provides repositories.posts.PostsRepository {
+component provides repositories.posts.PostsRepository requires io.Output out, time.DateUtil du, time.Calendar ic, data.IntUtil iu, data.mysql.MySQL {
     void PostsRepository:addPost(store Post newPost) {
-        posts = new Post[](posts, newPost)
+        MySQL db = new MySQL(
+            DatabaseConfig.host,
+            DatabaseConfig.port,
+            DatabaseConfig.user,
+            DatabaseConfig.password,
+            DatabaseConfig.databaseName)
+        
+        char query[] = "INSERT INTO posts (userId, content) VALUES ($(iu.makeString(newPost.userId)), \"$(newPost.content)\")"
+
+        if(!db.execute(query)) throw new Exception("Failed to add post to database")
+        db.close()
+    }
+
+    Post PostsRepository:getPostById(store int postId) {
+        for (int i = 0; i < posts.arrayLength; i++) {
+            if (posts[i].id == postId) {
+                DateTime diff = du.diff(posts[i].ttl, ic.getTime())
+                if(du.toMilliseconds(diff) < 60000) { // 1 minute
+                    return posts[i]    
+                } else {
+                    // Post expired, remove from cache
+                    Post newPosts[] = new Post[]()
+                    for (int j = 0; j < posts.arrayLength; j++) {
+                        if(posts[j].id != postId) {
+                            newPosts = new Post[](newPosts, posts[j])
+                        }
+                    }
+                    posts = newPosts
+                    break
+                }
+            }
+        }
+
+        MySQL db = new MySQL(
+            DatabaseConfig.host,
+            DatabaseConfig.port,
+            DatabaseConfig.user,
+            DatabaseConfig.password,
+            DatabaseConfig.databaseName)
+        
+        char query[] = "SELECT * FROM posts WHERE id = $(iu.makeString(postId)) LIMIT 1"
+
+        if(!db.execute(query)) throw new Exception("Failed to fetch post from database")
+        MySQLRow result[] = db.fetchAll()
+        if (result.arrayLength > 0) {
+            MySQLRow row = result[0]
+            int id
+            int userId
+            int likes
+            char content[]
+            DateTime ttl = ic.getTime()
+            for(int i = 0; i < row.fields.arrayLength; i++) {
+                if ( row.fields[i].name == "id") {
+                    id = iu.intFromString(row.fields[i].value)
+                } else if (row.fields[i].name == "userId") {
+                    userId = iu.intFromString(row.fields[i].value)
+                } else if (row.fields[i].name == "likes") {
+                    likes = iu.intFromString(row.fields[i].value)
+                } else if (row.fields[i].name == "content") {
+                    content = row.fields[i].value
+                }
+            }
+            Post post = new Post(id, userId, likes, content, ttl)
+            db.close()
+            posts = new Post[](posts, post) // add to cache
+            return post
+        }
+        db.close()
+        return null
     }
 
     void PostsRepository:likePost(store int postId) {
@@ -14,22 +85,81 @@ component provides repositories.posts.PostsRepository {
             }
         }
     }
-    
-    void PostsRepository:setPosts(store Post posts[]) {
-        posts = posts
-    }
 
     Post[] PostsRepository:getPosts() {
-        return posts
+        MySQL db = new MySQL(
+            DatabaseConfig.host,
+            DatabaseConfig.port,
+            DatabaseConfig.user,
+            DatabaseConfig.password,
+            DatabaseConfig.databaseName)
+        
+        char query[] = "SELECT * FROM posts"
+
+        if(!db.execute(query)) throw new Exception("Failed to fetch post from database")
+        MySQLRow result[] = db.fetchAll()
+        Post allPosts[] = new Post[]()
+
+        if (result.arrayLength > 0) {
+            for(int i = 0; i < result.arrayLength; i++) {
+                MySQLRow row = result[i]
+                int id
+                int userId
+                int likes
+                char content[]
+                for(int j = 0; j < row.fields.arrayLength; j++) {
+                    if ( row.fields[j].name == "id") {
+                        id = iu.intFromString(row.fields[j].value)
+                    } else if (row.fields[j].name == "userId") {
+                        userId = iu.intFromString(row.fields[j].value)
+                    } else if (row.fields[j].name == "likes") {
+                        likes = iu.intFromString(row.fields[j].value)
+                    } else if (row.fields[j].name == "content") {
+                        content = row.fields[j].value
+                    }
+                }
+                Post post = new Post(id, userId, likes, content, null)
+                allPosts = new Post[](allPosts, post)
+            }
+        }
+        db.close()
+        return allPosts
     }
 
     Post[] PostsRepository:getUserFeed(store int userId) {
+        MySQL db = new MySQL(
+            DatabaseConfig.host,
+            DatabaseConfig.port,
+            DatabaseConfig.user,
+            DatabaseConfig.password,
+            DatabaseConfig.databaseName)
+        
+        char query[] = "SELECT * FROM posts WHERE userId != $(iu.makeString(userId)) ORDER BY id DESC LIMIT $(iu.makeString(PAGINATION_SIZE))"
+
+        if(!db.execute(query)) throw new Exception("Failed to fetch post from database")
+        MySQLRow result[] = db.fetchAll()
         Post userPosts[] = new Post[]()
-        for (int i = 0; i < posts.arrayLength && userPosts.arrayLength <= PAGINATION_SIZE; i++) {
-            if (posts[i].userId != userId) {
-                userPosts = new Post[](userPosts, posts[i])
+
+        if (result.arrayLength > 0) {
+            for(int i = 0; i < result.arrayLength; i++) {
+                MySQLRow row = result[i]
+                int id
+                int likes
+                char content[]
+                for(int j = 0; j < row.fields.arrayLength; j++) {
+                    if ( row.fields[j].name == "id") {
+                        id = iu.intFromString(row.fields[j].value)
+                    } else if (row.fields[j].name == "likes") {
+                        likes = iu.intFromString(row.fields[j].value)
+                    } else if (row.fields[j].name == "content") {
+                        content = row.fields[j].value
+                    }
+                }
+                Post post = new Post(id, userId, likes, content, null)
+                userPosts = new Post[](userPosts, post)
             }
         }
+        db.close()
         return userPosts
     }
 }

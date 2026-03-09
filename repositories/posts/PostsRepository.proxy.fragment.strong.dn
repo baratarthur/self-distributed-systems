@@ -22,14 +22,14 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires time
 		LikePostParamsFormat params = new LikePostParamsFormat(postId)
 		char requestBody[] = je.jsonFromData(params)
 		Request req = new Request(buildMetaForMethod("likePost"), requestBody)
-		anycast(req)
+		hashcast(req, postId)
 	}
 
 	Post PostsRepository:getPostById(store int postId) {
 		GetPostByIdParamsFormat params = new GetPostByIdParamsFormat(postId)
 		char requestBody[] = je.jsonFromData(params)
 		Request req = new Request(buildMetaForMethod("getPostById"), requestBody)
-		Response res = anycast(req)
+		Response res = hashcast(req, postId)
 		return je.jsonToData(res.content, typeof(Post))
 	}
 
@@ -48,31 +48,30 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires time
 		return je.jsonToArray(res.content, typeof(Post[]))
 	}
 
-	Response broadcast(Request r) {
-		Response res
+	Response hashcast(Request r, int hashKey) {
 		mutex(pointerLock) {
-			for(int i = 0; i < remotes.arrayLength; i++) {
-				RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)
-				res = rpcUtil.make(reqWrapper)
-			}
-
+			int i = hashKey % remotes.arrayLength
+			RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)
+			return rpcUtil.make(reqWrapper)
 		}
 
-		return res
 	}
 
 	Response anycast(Request r) {
-		int i = addressPointer++ % remotes.arrayLength
-		RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)
-		return rpcUtil.make(reqWrapper)
+		mutex(pointerLock) {
+			int i = addressPointer++ % remotes.arrayLength
+			RequestWrapper reqWrapper = new RequestWrapper(remotes[i], r)
+			return rpcUtil.make(reqWrapper)
+		}
+
 	}
 
 	void AdaptEvents:active() {
-		remotes = ah.getAddresses("post-repository-replicate-weak")
+		remotes = ah.getAddresses("post-repository-fragment-strong")
 	}
 
 	void AdaptEvents:inactive() {
-		ah.removeAllFrom("post-repository-replicate-weak")
+		ah.removeAllFrom("post-repository-fragment-strong")
 	}
 
 }
