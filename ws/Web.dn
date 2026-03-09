@@ -19,19 +19,23 @@ component provides ws.Web requires repositories.posts.PostsRepository repo, data
     String names[] = new String[](
         new String("PostsRepository"),
         new String("PostsRepository with strong replication"), 
-        new String("PostsRepository with weak replication")
+        new String("PostsRepository with weak replication"),
+        new String("PostsRepository with strong fragmentation"), 
+        new String("PostsRepository with weak fragmentation")
     )
     String remoteNames[] = new String[](
         new String("post-repository"),
         new String("post-repository-replicate-strong"),
-        new String("post-repository-replicate-weak")
+        new String("post-repository-replicate-weak"),
+        new String("post-repository-fragment-strong"),
+        new String("post-repository-fragment-weak")
     )
     int lastComponentIndex = 0
     int id = 1
 
     void Web:setup() {
         repo = new PostsRepository() from repoComponents[lastComponentIndex].mainComponent
-        out.println("Server started on por 8080")
+        out.println("Server started on port 8080")
     }
 
     void changeRepo(int option) {

@@ -35,23 +35,20 @@ data:
 
     export const options = {
         stages: [
-          { duration: '1s', target: 2 },
-          { duration: '75s', target: 30 },
+          { duration: '1m', target: 2 },
+          { duration: '1m', target: 30 },
+          { duration: '1m', target: 60 },
         ],
     };
 
     export default function () {
-      const apiUrl = 'http://dana-main-service:8080/';
+      const apiUrl = 'http://192.168.5.20:8080/';
       const userId = exec.vu.idInInstance;
 
       // user creates a post
       const randomChanceToPost = randomIntBetween(1, 100);
-      if(randomChanceToPost <= 15) { // 15% chance to create a post
-        console.log(`VU ${userId}: ENTREI NO IF. Tentando criar FormData...`); // LOG 1
-        
+      if(randomChanceToPost <= 15) { // 15% chance to create a post        
         try {
-            console.log(`VU ${userId}: FormData criado. Enviando POST...`); // LOG 2
-
             const resCreatePost = http.post(
               apiUrl + 'post',
               JSON.stringify({'userId': userId.toString(), 'content': 'teste de post'}),
@@ -60,10 +57,7 @@ data:
                 tags: { name: 'CreatePost' },
                 timeout: '5s',
               }
-            );
-            
-            console.log(`VU ${userId}: POST enviado. Status: ${resCreatePost.status}`); // LOG 3
-            
+            );           
             check(resCreatePost, { 'status was 201': (r) => r.status == 201 });
         } catch (e) {
             console.error(`VU ${userId}: ERRO CRÍTICO dentro do IF: ` + e); // VAI MOSTRAR O ERRO REAL

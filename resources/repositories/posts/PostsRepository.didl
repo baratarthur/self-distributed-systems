@@ -1,5 +1,8 @@
 {
     "name": "post-repository",
+    "allows": [" RS ", " RW ", " FS ", " FW "],
+    "occupation": "1%",
+    "boundaries": ["0 - 30 ms ", "*"],
     "dependencies": [
         { "lib": "time.Timer", "alias": "timer" }
     ],
