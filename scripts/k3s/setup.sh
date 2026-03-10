@@ -6,7 +6,7 @@ if [ ! -d "$DIRECTORY" ]; then
     mkdir "$DIRECTORY"
 fi
 
-source ./scripts/build/compile.sh
+# source ./scripts/build/compile.sh
 
 source ./scripts/k3s/build-publish-main.sh
 source ./scripts/k3s/build-publish-remote.sh
