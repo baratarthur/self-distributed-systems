@@ -5,7 +5,7 @@ data CreatePostDTO {
     char content[]
 }
 
-component provides ws.Web requires repositories.posts.PostsRepository repo, data.IntUtil iu, io.Output out,
+component provides ws.Web requires repositories.posts.PostsRepository, data.IntUtil iu, io.Output out,
     composition.RecursiveLoader loader, composition.Adapt adapter, io.Input in, time.DateUtil du, data.StringUtil su,
     data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, libs.network.rpc.RPCUtil {
     PostsRepository repo

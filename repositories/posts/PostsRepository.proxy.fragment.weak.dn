@@ -2,7 +2,7 @@ uses libs.utils.Constants
 
 
 component provides repositories.posts.PostsRepository(AdaptEvents) requires time.Timer timer, libs.network.rpc.RPCUtil rpcUtil, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah {
-	Address remotes[] = new Address[]
+	Address remotes[] = new Address[]()
 	int addressPointer = 0
 	Mutex pointerLock = new Mutex()
 	
