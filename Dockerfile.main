@@ -29,7 +29,7 @@ COPY . .
 RUN chmod +x /app/scripts/run.sh
 RUN chmod +x /app/scripts/build/compile.sh
 
-RUN source /app/scripts/build/compile.sh
+RUN /app/scripts/build/compile.sh
 
 # ENV MODE=1
 # Define um comando padrão para interagir com o container
