@@ -7,8 +7,8 @@ docker buildx build \
         --push \
         -f Dockerfile.main .
 
-docker tag dana-main:latest my.private-registry.lan:5000/dana-main:latest
-docker push my.private-registry.lan:5000/dana-main:latest
+# docker tag dana-main:latest my.private-registry.lan:5000/dana-main:latest
+# docker push my.private-registry.lan:5000/dana-main:latest
 
 echo "Veryfying deploied image..."
 curl -X GET http://my.private-registry.lan:5000/v2/_catalog

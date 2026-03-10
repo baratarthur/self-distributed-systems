@@ -15,7 +15,7 @@ spec:
       containers:
       - name: dana-main
         image: my.private-registry.lan:5000/dana-main:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
