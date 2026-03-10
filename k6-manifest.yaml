@@ -42,7 +42,7 @@ data:
     };
 
     export default function () {
-      const apiUrl = 'http://192.168.5.20:8080/';
+      const apiUrl = 'http://192.168.5.20:31963/';
       const userId = exec.vu.idInInstance;
 
       // user creates a post
