@@ -1,13 +1,15 @@
 #!/bin/bash
 minikube delete
-minikube start --cpus=6 --memory=2048mb --driver=docker
+minikube start --cpus=24 --memory=16384mb --driver=docker
 # 1-> app version, 2 -> experiment round
 kubectl apply -f database.yaml
-source ./scripts/build/compile.sh
-source ./scripts/build/build-minikube.sh
 echo "App version $1 built."
-echo "Running experiment for 3m in $1 ..."
-sleep 3m
+echo "Starting k6 user load..."
+kubectl apply -f k6-manifest.yaml
+sleep 1m
+echo "Starting k6 viral load..."
+kubectl apply -f k6-manifest-viral.yaml
+sleep 1m
 # echo "Experiment round $1 finished."
 # source ./data-retreive/copy-result.sh $1 30u
 # echo "Copying logs from dana-main"

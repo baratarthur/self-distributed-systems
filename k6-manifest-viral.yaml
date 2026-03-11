@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-test-script-viral
+data:
+  test.js: |
+    import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+    import http from 'k6/http';
+    import exec from 'k6/execution';
+    import { check, sleep, randomSeed } from 'k6';
+
+    /**
+    * Gera um número aleatório dentro de um range [min, max] seguindo uma distribuição normal.
+    * A média ficará exatamente no centro do range.
+    * @param {number} min - O valor mínimo desejado.
+    * @param {number} max - O valor máximo desejado.
+    * @returns {number} O número gerado.
+    */
+    function randomNormal(min, max) {
+        let u = 0, v = 0;
+        
+        // Evita o 0 para que o Math.log não retorne -Infinity
+        while (u === 0) u = Math.random();
+        while (v === 0) v = Math.random();
+        
+        // Transformação de Box-Muller para obter um valor normal padrão (média 0, desvio padrão 1)
+        let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        
+        // Ajustando a média e o desvio padrão para o nosso range
+        const mean = (min + max) / 2;
+        const stdDev = (max - min) / 6; // 6 desvios padrões cobrem 99.7% da curva de Gauss
+        
+        num = num * stdDev + mean;
+        
+        // Como a distribuição normal é infinita nas pontas, precisamos descartar
+        // (fazer um "resample") os raros números (0.3%) que caírem fora do limite [min, max]
+        if (num < min || num > max) {
+            return randomNormal(min, max); 
+        }
+        
+        return num;
+    }
+
+    export const options = {
+        stages: [
+          { duration: '10s', target: 2 },
+          { duration: '10s', target: 4 },
+          { duration: '10s', target: 8 },
+          { duration: '10s', target: 16 },
+          { duration: '10s', target: 32 },
+          { duration: '10s', target: 64 }
+        ],
+    };
+
+    export default function () {
+      const apiUrl = 'http://192.168.5.20:30080/';
+      const userId = exec.vu.idInInstance;
+
+      const resGetViral = http.get(apiUrl + 'post/' + Math.floor(randomNormal(1, 10)), { tags: { name: 'GetViralPostFeed' }, timeout: '5s' });
+      check(resGetViral, { 'status was 200': (r) => r.status == 200 });
+
+      sleep(1);
+    }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-job-viral
+  labels:
+    app: k6-load-tester-viral
+spec:
+  template:
+    metadata:
+      labels:
+        app: k6-load-tester-viral
+    spec:
+      containers:
+      - name: k6
+        image: grafana/k6:latest
+        command: ["sh", "-c", "k6 run /scripts/test.js --out csv=/results/data.csv && echo 'Teste finalizado. Dormindo...' && sleep 600"]
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+        - name: results-volume
+          mountPath: /results
+      restartPolicy: Never
+      volumes:
+      - name: script-volume
+        configMap:
+          name: k6-test-script-viral
+      - name: results-volume
+        emptyDir: {}
