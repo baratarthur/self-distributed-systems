@@ -29,8 +29,21 @@ spec:
       containers:
       - name: mysql
         image: mysql:8.0
+        # Argumentos para otimizar o motor InnoDB
+        args:
+          - "--innodb_buffer_pool_size=1G" 
+          - "--innodb_log_file_size=256M"
+          - "--max_connections=200"
         ports:
         - containerPort: 3306
+        resources:
+          # 'requests' garante o recurso, 'limits' impede que o container consuma tudo do nó
+          requests:
+            cpu: "500m"
+            memory: "1.5Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
         env:
         - name: MYSQL_DATABASE
           value: "danadb"
@@ -54,9 +67,10 @@ spec:
       name: mysql-storage
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      # Se o seu provedor suportar, use um storageClassName de alta performance (ex: ssd, gp3)
       resources:
         requests:
-          storage: 1Gi
+          storage: 10Gi
 ---
 apiVersion: v1
 kind: ConfigMap
