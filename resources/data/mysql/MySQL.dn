@@ -1,0 +1,38 @@
+/* { "description" : "This data type represents one field value of a row from a database query."} */
+data MySQLField {
+	/* { "@description" : "The name of the field (i.e. column)."} */
+	char name[]
+	/* { "@description" : "The value of the field."} */
+	char value[]
+}
+
+/* { "description" : "This data type represents a resulting row from a query."} */
+data MySQLRow {
+	/* { "@description" : "The fields (i.e. columns) of the row."} */
+	MySQLField fields[]
+}
+
+/* { "description" : "MySQL database driver."} */
+interface MySQL {
+	/* {"@description" : "Create a new MySQL connection.",
+			"host" : "The host ip address where the database is running.",
+			"port" : "The port number.",
+			"user" : "The user name to connect to the database.",
+			"pass" : "The password to connect to the database.",
+			"dbName": "The database name. This can be left blank, in case the database name will be provided later on."} */
+	MySQL(char host[], int port, char user[], char pass[], char dbName[])
+
+	/* {"@description" : "Executes a query to the database, returning true if the query is successfully executed, and false otherwise."} */
+	bool execute(char query[])
+
+	/* {"@description" : "After executing a query that return results (e.g. SELECT * FROM ), this function returns the query data result."} */
+	MySQLRow[] fetchAll()
+
+	/* {"@description" : "Closes the database connection. Very important to avoid \"too many connections\" exception."} */
+	void close()
+}
+// Revision history
+// To propose a new revision to this entity, use dana source put -ut your/new/version.dn -n data.mysql.MySQL -m "reason for update" -u yourUsername
+// Version 2 (this version) by barry
+// Notes for this version: Updates to documentation strings.
+// Version 1 by barry

@@ -2,7 +2,7 @@
 FROM ubuntu:latest
 
 # Atualiza o índice de pacotes e instala dependências necessárias (curl e unzip)
-RUN apt-get update && apt-get install -y curl unzip python3 iproute2 iputils-ping net-tools
+RUN apt-get update && apt-get install -y curl unzip python3 iproute2 iputils-ping net-tools libmysqlclient-dev openssl libssl-dev
 
 RUN mkdir -p /dana
 
@@ -25,6 +25,12 @@ WORKDIR /app
 
 # Concede permissão de execução ao executável "dana"
 COPY . .
+
+WORKDIR /app/native_libraries
+
+RUN  make mysql_lib
+
+WORKDIR /app
 
 RUN chmod +x /app/scripts/run.sh
 RUN chmod +x /app/scripts/build/compile.sh

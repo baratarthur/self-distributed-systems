@@ -1,12 +1,19 @@
-DIRECTORY="sds-proxy-generator"
+DIRECTORY_PROXY="sds-proxy-generator"
+DIRECTORY_NATIVE_LIBRARIES="native_libraries"
 
-if [ ! -d "$DIRECTORY" ]; then
-    echo "Directory $DIRECTORY does not exist. Creating it now..."
+if [ ! -d "$DIRECTORY_PROXY" ]; then
+    echo "Directory $DIRECTORY_PROXY does not exist. Creating it now..."
     git clone https://github.com/baratarthur/sds-proxy-generator.git
-    mkdir "$DIRECTORY"
+    mkdir "$DIRECTORY_PROXY"
 fi
 
-# source ./scripts/build/compile.sh
+if [ ! -d "$DIRECTORY_NATIVE_LIBRARIES" ]; then
+    echo "Directory $DIRECTORY_NATIVE_LIBRARIES does not exist. Creating it now..."
+    git clone https://github.com/projectdana/native_libraries.git
+    mkdir "$DIRECTORY_NATIVE_LIBRARIES"
+fi
+
+cp custom/* native_libraries/
 
 source ./scripts/k3s/build-publish-main.sh
 source ./scripts/k3s/build-publish-remote.sh
