@@ -1,8 +1,7 @@
 #!/bin/bash
-minikube delete
-minikube start --cpus=24 --memory=16384mb --driver=docker
 # 1-> app version, 2 -> experiment round
-kubectl apply -f database.yaml
+kubectl delete -f k6-manifest.yaml
+kubectl delete -f k6-manifest-viral.yaml
 echo "App version $1 built."
 echo "Starting k6 user load..."
 kubectl apply -f k6-manifest.yaml
