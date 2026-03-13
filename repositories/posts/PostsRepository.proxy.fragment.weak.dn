@@ -5,7 +5,7 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires time
 	Address remotes[] = new Address[]()
 	int addressPointer = 0
 	Mutex pointerLock = new Mutex()
-	
+
 	Metadata[] buildMetaForMethod(char method[]) {
 		Metadata metaMethod = new Metadata("method", method)
 		return new Metadata[](metaMethod)

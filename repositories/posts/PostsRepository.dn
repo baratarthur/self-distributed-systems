@@ -4,19 +4,30 @@ uses libs.utils.DatabaseConfig
 const char debugMSG[] = "[@PostsRepository]"
 const int PAGINATION_SIZE = 10
 
-component provides repositories.posts.PostsRepository requires io.Output out, time.DateUtil du, time.Calendar ic, data.IntUtil iu, data.mysql.MySQL {
-    void PostsRepository:addPost(store Post newPost) {
-        MySQL db = new MySQL(
-            DatabaseConfig.host,
-            DatabaseConfig.port,
-            DatabaseConfig.user,
-            DatabaseConfig.password,
-            DatabaseConfig.databaseName)
-        
-        char query[] = "INSERT INTO posts (userId, content) VALUES ($(iu.makeString(newPost.userId)), \"$(newPost.content)\")"
+component provides repositories.posts.PostsRepository(Destructor) requires io.Output out, time.DateUtil du, time.Calendar ic, data.IntUtil iu, data.mysql.MySQL {
+    MySQL db = null
 
+    void verifyDbConnection() {
+        if(db == null) {
+            out.println("Database connection not established. Attempting to connect...")
+            db = new MySQL(DatabaseConfig.host,
+                            DatabaseConfig.port,
+                            DatabaseConfig.user,
+                            DatabaseConfig.password,
+                            DatabaseConfig.databaseName)
+        }
+    }
+    
+    void Destructor:destroy() {
+        if(db != null) {
+            db.close()
+        }
+    }
+
+    void PostsRepository:addPost(store Post newPost) {
+        char query[] = "INSERT INTO posts (userId, content) VALUES ($(iu.makeString(newPost.userId)), \"$(newPost.content)\")"
+        verifyDbConnection()
         if(!db.execute(query)) throw new Exception("Failed to add post to database")
-        db.close()
     }
 
     Post PostsRepository:getPostById(store int postId) {
@@ -38,16 +49,10 @@ component provides repositories.posts.PostsRepository requires io.Output out, ti
                 }
             }
         }
-
-        MySQL db = new MySQL(
-            DatabaseConfig.host,
-            DatabaseConfig.port,
-            DatabaseConfig.user,
-            DatabaseConfig.password,
-            DatabaseConfig.databaseName)
         
         char query[] = "SELECT * FROM posts WHERE id = $(iu.makeString(postId)) LIMIT 1"
 
+        verifyDbConnection()
         if(!db.execute(query)) throw new Exception("Failed to fetch post from database")
         MySQLRow result[] = db.fetchAll()
         if (result.arrayLength > 0) {
@@ -69,11 +74,9 @@ component provides repositories.posts.PostsRepository requires io.Output out, ti
                 }
             }
             Post post = new Post(id, userId, likes, content, ttl)
-            db.close()
             posts = new Post[](posts, post) // add to cache
             return post
         }
-        db.close()
         return null
     }
 
@@ -86,16 +89,10 @@ component provides repositories.posts.PostsRepository requires io.Output out, ti
         }
     }
 
-    Post[] PostsRepository:getPosts() {
-        MySQL db = new MySQL(
-            DatabaseConfig.host,
-            DatabaseConfig.port,
-            DatabaseConfig.user,
-            DatabaseConfig.password,
-            DatabaseConfig.databaseName)
-        
+    Post[] PostsRepository:getPosts() {        
         char query[] = "SELECT * FROM posts"
 
+        verifyDbConnection()
         if(!db.execute(query)) throw new Exception("Failed to fetch post from database")
         MySQLRow result[] = db.fetchAll()
         Post allPosts[] = new Post[]()
@@ -122,20 +119,13 @@ component provides repositories.posts.PostsRepository requires io.Output out, ti
                 allPosts = new Post[](allPosts, post)
             }
         }
-        db.close()
         return allPosts
     }
 
     Post[] PostsRepository:getUserFeed(store int userId) {
-        MySQL db = new MySQL(
-            DatabaseConfig.host,
-            DatabaseConfig.port,
-            DatabaseConfig.user,
-            DatabaseConfig.password,
-            DatabaseConfig.databaseName)
-        
         char query[] = "SELECT * FROM posts WHERE userId != $(iu.makeString(userId)) ORDER BY id DESC LIMIT $(iu.makeString(PAGINATION_SIZE))"
 
+        verifyDbConnection()
         if(!db.execute(query)) throw new Exception("Failed to fetch post from database")
         MySQLRow result[] = db.fetchAll()
         Post userPosts[] = new Post[]()
@@ -159,7 +149,6 @@ component provides repositories.posts.PostsRepository requires io.Output out, ti
                 userPosts = new Post[](userPosts, post)
             }
         }
-        db.close()
         return userPosts
     }
 }
