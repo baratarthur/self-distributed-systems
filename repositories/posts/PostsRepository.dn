@@ -3,7 +3,7 @@ uses libs.utils.DatabaseConfig
 
 const char debugMSG[] = "[@PostsRepository]"
 const int PAGINATION_SIZE = 10
-const int CONNECTION_POOL_SIZE = 400
+const int CONNECTION_POOL_SIZE = 60
 
 data ConnectionPool {
     MySQL db
