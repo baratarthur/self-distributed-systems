@@ -51,8 +51,7 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
             s.sendResponse()
             return true
         } else if (path == "/all") {
-            Post allPosts[]
-            allPosts = repo.getPosts()
+            Post allPosts[] = repo.getPosts()
             s.write(je.jsonFromArray(allPosts))
             s.sendResponse()
             return true
@@ -78,26 +77,13 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
 
     bool Web:post(char path[], char contentType[], byte payload[], DocStream s) {
 		if (path == "/post") {
-            DateTime init = ic.getTime()
-            char body[] = new char[](payload)
-            
-            CreatePostDTO createPostDTO = je.jsonToData(body, typeof(CreatePostDTO))
-
-            Post newPost = new Post(id, createPostDTO.userId, 0, createPostDTO.content, new DateTime())
-            repo.addPost(newPost)
-
+            asynch::addPost(payload)
             s.setStatusCode(201, "Created", true)
             s.sendResponse()
-            DateTime diff = du.diff(ic.getTime(), init)
-            
             return true
         } else if (su.startsWith(path, "/like/")) {
-            String pathInfo[] = su.explode(path, "/") // expected: ["like", "<postId:number>"]
-            int postId = iu.intFromString(pathInfo[1].string)
-
-            repo.likePost(postId)
-
-            s.setStatusCode(200, "Post on id $(pathInfo[1].string) liked", true)
+            asynch::processLike(path)
+            s.setStatusCode(200, "Post on id liked", true)
             s.sendResponse()
             return true
         } else if (su.startsWith(path, "/adapt/")) {
@@ -108,7 +94,7 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
             if(proxyId > 0) {
                 ah.addAddressesInNamespace(je.jsonToArray(body, typeof(Address[])), remoteNames[proxyId].string)
             }
-            changeRepo(proxyId)
+            asynch::changeRepo(proxyId)
 
             s.setStatusCode(200, "Repository changed to $(names[proxyId].string)", true)
             s.sendResponse()
@@ -116,6 +102,19 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
         }
 
         return false
+    }
+
+    void addPost(byte payload[]) {
+        char body[] = new char[](payload)
+        CreatePostDTO createPostDTO = je.jsonToData(body, typeof(CreatePostDTO))
+        Post newPost = new Post(id, createPostDTO.userId, 0, createPostDTO.content, new DateTime())
+        repo.addPost(newPost)
+    }
+
+    void processLike(char path[]) {
+        String pathInfo[] = su.explode(path, "/") // expected: ["like", "<postId:number>"]
+        int postId = iu.intFromString(pathInfo[1].string)
+        repo.likePost(postId)
     }
 	
 }

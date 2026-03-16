@@ -58,9 +58,9 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
     }
 
     void PostsRepository:addPost(store Post newPost) {
-        // mutex(writtingLock) {
-        postsWrite = new Post[](postsWrite, newPost) // add to cache
-        // }
+        mutex(writtingLock) {
+            postsWrite = new Post[](postsWrite, newPost) // add to cache
+        }
         out.println("writing post")
         if(postsWrite.arrayLength > WRITING_CACHE_SIZE && !writingInDb) { // simple cache eviction policy
             out.println("writing in database")
@@ -105,7 +105,8 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
         char query[] = "SELECT * FROM posts WHERE id = $(iu.makeString(postId)) LIMIT 1;"
 
         MySQL conn = getDbConnection("r")
-        if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
+        Thread t = asynch::execute(conn, query)
+        t.join()
         MySQLRow result[] = conn.fetchAll()
         if (result.arrayLength > 0) {
             MySQLRow row = result[0]
@@ -145,7 +146,8 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
         char query[] = "SELECT * FROM posts;"
 
         MySQL conn = getDbConnection("r")
-        if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
+        Thread t = asynch::execute(conn, query)
+        t.join()
         MySQLRow result[] = conn.fetchAll()
         
         Post allPosts[] = new Post[]()
@@ -179,7 +181,8 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
         char query[] = "SELECT * FROM posts WHERE userId != $(iu.makeString(userId)) ORDER BY id DESC LIMIT $(iu.makeString(PAGINATION_SIZE));"
 
         MySQL conn = getDbConnection("r")
-        if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
+        Thread t = asynch::execute(conn, query)
+        t.join()
         MySQLRow result[] = conn.fetchAll()
         
         Post userPosts[] = new Post[]()
@@ -204,5 +207,9 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
             }
         }
         return userPosts
+    }
+
+    void execute(MySQL conn, char query[]) {
+        if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
     }
 }
