@@ -66,26 +66,35 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
     }
 
     void PostsRepository:addPost(store Post newPost) {
-        char query[] = "INSERT INTO posts (userId, content) VALUES ($(iu.makeString(newPost.userId)), \"$(newPost.content)\")"
-        MySQL conn = getDbConnection("w")
-        if(!conn.execute(query)) throw new Exception("Failed to add post to database")
+        postsWrite = new Post[](postsWrite, newPost) // add to cache
+        if(postsWrite.arrayLength > 10) { // simple cache eviction policy
+            char query[] = "INSERT INTO posts (userId, content) VALUES "
+            for (int i = 0; i < postsWrite.arrayLength - 1; i++) {
+                query = new char[](query, "($(iu.makeString(postsWrite[i].userId)), '$(postsWrite[i].content)')")
+                if (i < postsWrite.arrayLength - 2) {
+                    query = new char[](query, ", ")
+                }
+            }
+            MySQL conn = getDbConnection("w")
+            if(!conn.execute(query)) throw new Exception("Failed to add post to database")
+        }
     }
 
     Post PostsRepository:getPostById(store int postId) {
-        for (int i = 0; i < posts.arrayLength; i++) {
-            if (posts[i].id == postId) {
-                DateTime diff = du.diff(posts[i].ttl, ic.getTime())
+        for (int i = 0; i < postsRead.arrayLength; i++) {
+            if (postsRead[i].id == postId) {
+                DateTime diff = du.diff(postsRead[i].ttl, ic.getTime())
                 if(du.toMilliseconds(diff) < 60000) { // 1 minute
-                    return posts[i]    
+                    return postsRead[i]    
                 } else {
                     // Post expired, remove from cache
                     Post newPosts[] = new Post[]()
-                    for (int j = 0; j < posts.arrayLength; j++) {
-                        if(posts[j].id != postId) {
-                            newPosts = new Post[](newPosts, posts[j])
+                    for (int j = 0; j < postsRead.arrayLength; j++) {
+                        if(postsRead[j].id != postId) {
+                            newPosts = new Post[](newPosts, postsRead[j])
                         }
                     }
-                    posts = newPosts
+                    postsRead = newPosts
                     break
                 }
             }
@@ -115,16 +124,16 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
                 }
             }
             Post post = new Post(id, userId, likes, content, ttl)
-            posts = new Post[](posts, post) // add to cache
+            postsRead = new Post[](postsRead, post) // add to cache
             return post
         }
         return null
     }
 
     void PostsRepository:likePost(store int postId) {
-        for (int i = 0; i < posts.arrayLength; i++) {
-            if (posts[i].id == postId) {
-                posts[i].likes = posts[i].likes + 1
+        for (int i = 0; i < postsWrite.arrayLength; i++) {
+            if (postsWrite[i].id == postId) {
+                postsWrite[i].likes = postsWrite[i].likes + 1
                 break
             }
         }

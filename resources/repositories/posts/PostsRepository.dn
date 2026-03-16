@@ -34,7 +34,8 @@ data GetPostByIdParamsFormat {
 }
 
 interface PostsRepository {
-    transfer Post posts[]
+    transfer Post postsRead[]
+    transfer Post postsWrite[]
 
     void createConnectionPool()
     void addPost(store Post newPost)
