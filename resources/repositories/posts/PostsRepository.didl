@@ -8,7 +8,7 @@
     ],
     "attributes": {
         "postsRead": { "calculateWith": "setPosts" },
-        "postsWrite": { "calculateWith": "setPosts" }
+        "postsWrite": { "calculateWith": "setPosts", "skip": true }
     },
     "methods": {
         "getPosts": {

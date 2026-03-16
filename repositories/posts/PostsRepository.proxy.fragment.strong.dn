@@ -28,7 +28,7 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires time
 		LikePostParamsFormat params = new LikePostParamsFormat(postId)
 		char requestBody[] = je.jsonFromData(params)
 		Request req = new Request(buildMetaForMethod("likePost"), requestBody)
-		hashcast(req, postId)
+		anycast(req)
 	}
 
 	Post PostsRepository:getPostById(store int postId) {
