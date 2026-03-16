@@ -11,6 +11,12 @@ component provides repositories.posts.PostsRepository(AdaptEvents) requires time
 		return new Metadata[](metaMethod)
 	}
 
+	void PostsRepository:createConnectionPool() {
+		char requestBody[] = ""
+		Request req = new Request(buildMetaForMethod("createConnectionPool"), requestBody)
+		anycast(req)
+	}
+
 	void PostsRepository:addPost(store Post newPost) {
 		AddPostParamsFormat params = new AddPostParamsFormat(newPost)
 		char requestBody[] = je.jsonFromData(params)

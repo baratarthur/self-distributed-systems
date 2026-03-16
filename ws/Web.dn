@@ -35,6 +35,7 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
 
     void Web:setup() {
         repo = new PostsRepository() from repoComponents[lastComponentIndex].mainComponent
+        repo.createConnectionPool()
         out.println("Server started on port 8080")
     }
 

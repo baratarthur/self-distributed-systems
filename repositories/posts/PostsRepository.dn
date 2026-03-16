@@ -5,19 +5,13 @@ const char debugMSG[] = "[@PostsRepository]"
 const int PAGINATION_SIZE = 10
 const int CONNECTION_POOL_SIZE = 60
 
-data ConnectionPool {
-    MySQL db
-    Mutex lock
-}
-
 component provides repositories.posts.PostsRepository(Destructor) requires io.Output out, time.DateUtil du, time.Calendar ic, data.IntUtil iu, data.mysql.MySQL {
     MySQL dbs[] = new MySQL[]()
-    static Mutex dbsLock[] = new Mutex[]()
 
     int connection = 0
     static Mutex connectionLock = new Mutex()
 
-    void verifyDbConnection() {
+    void PostsRepository:createConnectionPool() {
         if(dbs.arrayLength == 0) {
             out.println("Database connection not established. Starting connection pool...")
             mutex(connectionLock) {
@@ -29,22 +23,18 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
                                         DatabaseConfig.password,
                                         DatabaseConfig.databaseName)
                     dbs = new MySQL[](dbs, db)
-                    dbsLock = new Mutex[](dbsLock, new Mutex())
                 }
             }
         }
     }
 
-    ConnectionPool getDbConnection() {
-        ConnectionPool pool
+    MySQL getDbConnection() {
         MySQL db
-        Mutex lock
         mutex(connectionLock) {
             db = dbs[connection]
-            lock = dbsLock[connection]
             connection = (connection + 1) % CONNECTION_POOL_SIZE
         }
-        return new ConnectionPool(db, lock)
+        return db
     }
     
     void Destructor:destroy() {
@@ -55,11 +45,8 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
 
     void PostsRepository:addPost(store Post newPost) {
         char query[] = "INSERT INTO posts (userId, content) VALUES ($(iu.makeString(newPost.userId)), \"$(newPost.content)\")"
-        verifyDbConnection()
-        ConnectionPool conn = getDbConnection()
-        mutex(conn.lock) {
-            if(!conn.db.execute(query)) throw new Exception("Failed to add post to database")
-        }
+        MySQL conn = getDbConnection()
+        if(!conn.execute(query)) throw new Exception("Failed to add post to database")
     }
 
     Post PostsRepository:getPostById(store int postId) {
@@ -84,13 +71,9 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
         
         char query[] = "SELECT * FROM posts WHERE id = $(iu.makeString(postId)) LIMIT 1"
 
-        verifyDbConnection()
-        ConnectionPool conn = getDbConnection()
-        MySQLRow result[]
-        mutex(conn.lock) {
-            if(!conn.db.execute(query)) throw new Exception("Failed to fetch post from database")
-            result = conn.db.fetchAll()
-        }
+        MySQL conn = getDbConnection()
+        if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
+        MySQLRow result[] = conn.fetchAll()
         if (result.arrayLength > 0) {
             MySQLRow row = result[0]
             int id
@@ -128,13 +111,10 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
     Post[] PostsRepository:getPosts() {
         char query[] = "SELECT * FROM posts"
 
-        verifyDbConnection()
-        ConnectionPool conn = getDbConnection()
-        MySQLRow result[]
-        mutex(conn.lock) {
-            if(!conn.db.execute(query)) throw new Exception("Failed to fetch post from database")
-            result = conn.db.fetchAll()
-        }
+        MySQL conn = getDbConnection()
+        if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
+        MySQLRow result[] = conn.fetchAll()
+        
         Post allPosts[] = new Post[]()
 
         if (result.arrayLength > 0) {
@@ -165,13 +145,10 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
     Post[] PostsRepository:getUserFeed(store int userId) {
         char query[] = "SELECT * FROM posts WHERE userId != $(iu.makeString(userId)) ORDER BY id DESC LIMIT $(iu.makeString(PAGINATION_SIZE))"
 
-        verifyDbConnection()
-        ConnectionPool conn = getDbConnection()
-        MySQLRow result[]
-        mutex(conn.lock) {
-            if(!conn.db.execute(query)) throw new Exception("Failed to fetch post from database")
-            result = conn.db.fetchAll()
-        }
+        MySQL conn = getDbConnection()
+        if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
+        MySQLRow result[] = conn.fetchAll()
+        
         Post userPosts[] = new Post[]()
 
         if (result.arrayLength > 0) {
