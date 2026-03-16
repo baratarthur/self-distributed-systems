@@ -3,6 +3,7 @@ uses libs.utils.DatabaseConfig
 
 const char debugMSG[] = "[@PostsRepository]"
 const int PAGINATION_SIZE = 10
+const int WRITING_CACHE_SIZE = 100
 const int CONNECTION_READ_POOL_SIZE = 90
 const int CONNECTION_WRITE_POOL_SIZE = 10
 
@@ -68,7 +69,7 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
     void PostsRepository:addPost(store Post newPost) {
         postsWrite = new Post[](postsWrite, newPost) // add to cache
         out.println("writing post")
-        if(postsWrite.arrayLength > 10) { // simple cache eviction policy
+        if(postsWrite.arrayLength > WRITING_CACHE_SIZE) { // simple cache eviction policy
             out.println("writing in database")
             char query[] = "INSERT INTO posts (userId, content) VALUES "
             for (int i = 0; i < postsWrite.arrayLength - 1; i++) {
