@@ -5,39 +5,35 @@ const char debugMSG[] = "[@PostsRepository]"
 const int PAGINATION_SIZE = 10
 const int WRITING_CACHE_SIZE = 100
 const int CONNECTION_READ_POOL_SIZE = 90
-const int CONNECTION_WRITE_POOL_SIZE = 10
 
 component provides repositories.posts.PostsRepository(Destructor) requires io.Output out, time.DateUtil du, time.Calendar ic, data.IntUtil iu, data.mysql.MySQL {
     MySQL dbs_read[] = new MySQL[]()
-    MySQL dbs_write[] = new MySQL[]()
+    MySQL dbs_write = null
 
+    static bool writingInDb = false
     int connectionRead = 0
-    int connectionWrite = 0
     static Mutex connectionReadLock = new Mutex()
-    static Mutex connectionWriteLock = new Mutex()
+    static Mutex writtingLock = new Mutex()
 
     void PostsRepository:createConnectionPool() {
         if(dbs_read.arrayLength == 0) {
             for(int i = 0; i < CONNECTION_READ_POOL_SIZE; i++) {
                 out.println("Init connection read $(iu.makeString(i))")
                 MySQL db = new MySQL(DatabaseConfig.host,
-                                    DatabaseConfig.port,
-                                    DatabaseConfig.user,
-                                    DatabaseConfig.password,
-                                    DatabaseConfig.databaseName)
+                                        DatabaseConfig.port,
+                                        DatabaseConfig.user,
+                                        DatabaseConfig.password,
+                                        DatabaseConfig.databaseName)
                 dbs_read = new MySQL[](dbs_read, db)
             }
         }
-        if(dbs_write.arrayLength == 0) {
-            for(int i = 0; i < CONNECTION_WRITE_POOL_SIZE; i++) {
-                out.println("Init connection write $(iu.makeString(i))")
-                MySQL db = new MySQL(DatabaseConfig.host,
+        if(dbs_write == null) {
+            out.println("Init connection write")
+            dbs_write = new MySQL(DatabaseConfig.host,
                                     DatabaseConfig.port,
                                     DatabaseConfig.user,
                                     DatabaseConfig.password,
                                     DatabaseConfig.databaseName)
-                dbs_write = new MySQL[](dbs_write, db)
-            }
         }
     }
 
@@ -48,39 +44,40 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
                 db = dbs_read[connectionRead]
                 connectionRead = (connectionRead + 1) % CONNECTION_READ_POOL_SIZE
             }
+            return db
         } else {
-            mutex(connectionWriteLock) {
-                db = dbs_write[connectionWrite]
-                connectionWrite = (connectionWrite + 1) % CONNECTION_WRITE_POOL_SIZE
-            }
+            return dbs_write
         }
-        return db
     }
     
     void Destructor:destroy() {
         for(int i = 0; i < dbs_read.arrayLength; i++) {
             dbs_read[i].close()
         }
-        for(int i = 0; i < dbs_write.arrayLength; i++) {
-            dbs_write[i].close()
-        }
+        dbs_write.close()
     }
 
     void PostsRepository:addPost(store Post newPost) {
-        postsWrite = new Post[](postsWrite, newPost) // add to cache
+        mutex(writtingLock) {
+            postsWrite = new Post[](postsWrite, newPost) // add to cache
+        }
         out.println("writing post")
-        if(postsWrite.arrayLength > WRITING_CACHE_SIZE) { // simple cache eviction policy
+        if(postsWrite.arrayLength > WRITING_CACHE_SIZE && !writingInDb) { // simple cache eviction policy
             out.println("writing in database")
-            char query[] = "INSERT INTO posts (userId, content) VALUES "
-            for (int i = 0; i < postsWrite.arrayLength - 1; i++) {
-                query = new char[](query, "($(iu.makeString(postsWrite[i].userId)), '$(postsWrite[i].content)')")
-                if (i < postsWrite.arrayLength - 2) {
-                    query = new char[](query, ", ")
+            mutex(writtingLock) {
+                writingInDb = true
+                char query[] = "INSERT INTO posts (userId, content) VALUES "
+                for (int i = 0; i < postsWrite.arrayLength - 1; i++) {
+                    query = new char[](query, "($(iu.makeString(postsWrite[i].userId)), '$(postsWrite[i].content)')")
+                    if (i < postsWrite.arrayLength - 2) {
+                        query = new char[](query, ", ")
+                    }
                 }
+                MySQL conn = getDbConnection("w")
+                if(!conn.execute(query)) throw new Exception("Failed to add post to database")
+                postsWrite = new Post[]()
+                writingInDb = false
             }
-            MySQL conn = getDbConnection("w")
-            if(!conn.execute(query)) throw new Exception("Failed to add post to database")
-            postsWrite = new Post[]()
         }
     }
 
