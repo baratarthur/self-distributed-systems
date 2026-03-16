@@ -73,6 +73,7 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
                         query = new char[](query, ", ")
                     }
                 }
+                query = new char[](query, ";")
                 MySQL conn = getDbConnection("w")
                 if(!conn.execute(query)) throw new Exception("Failed to add post to database")
                 postsWrite = new Post[]()
@@ -101,7 +102,7 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
             }
         }
         
-        char query[] = "SELECT * FROM posts WHERE id = $(iu.makeString(postId)) LIMIT 1"
+        char query[] = "SELECT * FROM posts WHERE id = $(iu.makeString(postId)) LIMIT 1;"
 
         MySQL conn = getDbConnection("r")
         if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
@@ -141,7 +142,7 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
     }
 
     Post[] PostsRepository:getPosts() {
-        char query[] = "SELECT * FROM posts"
+        char query[] = "SELECT * FROM posts;"
 
         MySQL conn = getDbConnection("r")
         if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")
@@ -175,7 +176,7 @@ component provides repositories.posts.PostsRepository(Destructor) requires io.Ou
     }
 
     Post[] PostsRepository:getUserFeed(store int userId) {
-        char query[] = "SELECT * FROM posts WHERE userId != $(iu.makeString(userId)) ORDER BY id DESC LIMIT $(iu.makeString(PAGINATION_SIZE))"
+        char query[] = "SELECT * FROM posts WHERE userId != $(iu.makeString(userId)) ORDER BY id DESC LIMIT $(iu.makeString(PAGINATION_SIZE));"
 
         MySQL conn = getDbConnection("r")
         if(!conn.execute(query)) throw new Exception("Failed to fetch post from database")

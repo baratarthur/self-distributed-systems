@@ -2,13 +2,13 @@ docker run -d \
         --name mysql-dana \
         -p 30306:3306 \
         --cpus=0 \
-        --memory=2g \
+        --memory=10g \
         -e MYSQL_DATABASE=danadb \
         -e MYSQL_USER=user_dana \
         -e MYSQL_PASSWORD=123456 \
         -e MYSQL_ROOT_PASSWORD=root_password_super_secreta \
         mysql:8.0 \
-        --innodb_buffer_pool_size=1G \
+        --innodb_buffer_pool_size=10G \
         --innodb_log_file_size=256M \
         --innodb_flush_log_at_trx_commit=2 \
         --max_connections=1500 \
