@@ -7,7 +7,7 @@ data CreatePostDTO {
 
 component provides ws.Web requires repositories.posts.PostsRepository, data.IntUtil iu, io.Output out,
     composition.RecursiveLoader loader, composition.Adapt adapter, io.Input in, time.DateUtil du, data.StringUtil su,
-    data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, libs.network.rpc.RPCUtil {
+    data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, libs.network.rpc.RPCUtil, time.Calendar ic {
     PostsRepository repo
     LoadedComponents repoComponents[] = new LoadedComponents[](
         loader.load("repositories/posts/PostsRepository.o"),
@@ -78,16 +78,18 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
 
     bool Web:post(char path[], char contentType[], byte payload[], DocStream s) {
 		if (path == "/post") {
+            DateTime init = ic.getTime()
             char body[] = new char[](payload)
             
             CreatePostDTO createPostDTO = je.jsonToData(body, typeof(CreatePostDTO))
 
             Post newPost = new Post(id, createPostDTO.userId, 0, createPostDTO.content, new DateTime())
             repo.addPost(newPost)
-            id++
 
             s.setStatusCode(201, "Created", true)
             s.sendResponse()
+            DateTime diff = du.diff(ic.getTime(), init)
+            
             return true
         } else if (su.startsWith(path, "/like/")) {
             String pathInfo[] = su.explode(path, "/") // expected: ["like", "<postId:number>"]
