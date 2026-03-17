@@ -1,7 +1,7 @@
 import random
-from locust import HttpUser, task, constant_throughput, tag
+from locust import FastHttpUser, task, constant_throughput, tag
 
-class SocialMediaUser(HttpUser):
+class SocialMediaUser(FastHttpUser):
     # Fix: constant_throughput(1) results in 1 req/sec. 
     # For 10 req/sec per user, use 10.
     wait_time = constant_throughput(1) 

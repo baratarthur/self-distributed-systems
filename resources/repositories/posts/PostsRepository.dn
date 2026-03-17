@@ -37,9 +37,7 @@ interface PostsRepository {
     transfer Post postsRead[]
     transfer Post postsWrite[]
 
-    void createConnectionPool()
     void addPost(store Post newPost)
-    void likePost(store int postId)
     Post getPostById(store int postId)
     Post[] getPosts()
     Post[] getUserFeed(store int userId)

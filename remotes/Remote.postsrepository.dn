@@ -39,21 +39,10 @@ component provides remotes.Remote:postsrepository requires net.TCPSocket, net.TC
 		char method[] = connection.getMethodFromMetadata(req.meta)
 		
 
-		if(method == "createConnectionPool") {
-			remoteComponent.createConnectionPool()
-			return connection.buildResponse("createConnectionPool", "200")
-		}
-
 		if(method == "addPost") {
 			AddPostParamsFormat paramsData = je.jsonToData(req.content, typeof(AddPostParamsFormat))
 			remoteComponent.addPost(paramsData.newPost)
 			return connection.buildResponse("addPost", "200")
-		}
-
-		if(method == "likePost") {
-			LikePostParamsFormat paramsData = je.jsonToData(req.content, typeof(LikePostParamsFormat))
-			remoteComponent.likePost(paramsData.postId)
-			return connection.buildResponse("likePost", "200")
 		}
 
 		if(method == "getPostById") {

@@ -24,9 +24,6 @@
             "returnParser": "je.jsonToArray({}, typeof(Post[]))",
             "remoteReturnParser": "je.jsonFromArray({})",
             "hashKey": "userId"
-        },
-        "likePost": {
-            "hashKey": "postId"
         }
     }
 }

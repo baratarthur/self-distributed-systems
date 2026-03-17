@@ -35,7 +35,6 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
 
     void Web:setup() {
         repo = new PostsRepository() from repoComponents[lastComponentIndex].mainComponent
-        repo.createConnectionPool()
         out.println("Server started on port 8080")
     }
 
@@ -46,6 +45,7 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
     }
 	
     bool Web:get(char path[], DocStream s){
+        DateTime startExecution = ic.getTime()
         if (path == "/") {
             s.write("Hello!")
             s.sendResponse()
@@ -62,6 +62,7 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
             userPosts = repo.getUserFeed(userId)
             s.write(je.jsonFromArray(userPosts))
             s.sendResponse()
+            // out.println("Read all posts time: $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
             return true
         } else if (su.startsWith(path, "/post/")) {
             String pathInfo[] = su.explode(path, "/") // expected: ["post", "<postId:number>"]
@@ -76,15 +77,12 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
     }
 
     bool Web:post(char path[], char contentType[], byte payload[], DocStream s) {
+        DateTime startExecution = ic.getTime()
 		if (path == "/post") {
             asynch::addPost(payload)
             s.setStatusCode(201, "Created", true)
             s.sendResponse()
-            return true
-        } else if (su.startsWith(path, "/like/")) {
-            asynch::processLike(path)
-            s.setStatusCode(200, "Post on id liked", true)
-            s.sendResponse()
+            out.println("Add post time: $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
             return true
         } else if (su.startsWith(path, "/adapt/")) {
             String pathInfo[] = su.explode(path, "/") // expected: ["like", "<proxy:number>"]
@@ -109,12 +107,6 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
         CreatePostDTO createPostDTO = je.jsonToData(body, typeof(CreatePostDTO))
         Post newPost = new Post(id, createPostDTO.userId, 0, createPostDTO.content, new DateTime())
         repo.addPost(newPost)
-    }
-
-    void processLike(char path[]) {
-        String pathInfo[] = su.explode(path, "/") // expected: ["like", "<postId:number>"]
-        int postId = iu.intFromString(pathInfo[1].string)
-        repo.likePost(postId)
     }
 	
 }
