@@ -62,7 +62,7 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
             userPosts = repo.getUserFeed(userId)
             s.write(je.jsonFromArray(userPosts))
             s.sendResponse()
-            // out.println("Read all posts time: $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
+            out.println("Read all posts time: $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
             return true
         } else if (su.startsWith(path, "/post/")) {
             String pathInfo[] = su.explode(path, "/") // expected: ["post", "<postId:number>"]
