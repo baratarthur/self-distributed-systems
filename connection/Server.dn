@@ -75,6 +75,7 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
         res = process(msg)
         if (res != null) sendResponse(msg, res)
         else sendResponse(msg, build404(msg))
+        s.disconnect()
     }
 
     HTTPResponse process(HTTPMessage req) {
