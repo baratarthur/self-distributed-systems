@@ -1,2 +1,2 @@
 #!/bin/bash
-dana ws.core
+dana connection/App.o

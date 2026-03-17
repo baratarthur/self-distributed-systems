@@ -1,0 +1,6 @@
+component provides App requires Server s {
+    int App:main(AppParam param[]) {
+        s.start(8080)
+        return 0
+    }
+}

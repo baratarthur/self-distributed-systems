@@ -1,0 +1,175 @@
+const char debugMSG[] = "[Server] -"
+
+data HTTPResponse {
+    int code
+    char status[]
+    char serverName[]
+    int contentLength
+    char contentType[]
+    char body[]
+}
+
+data CreatePostDTO {
+    int userId
+    char content[]
+}
+
+component provides Server(Destructor) requires net.TCPSocket, net.TCPServerSocket, io.Output out, data.IntUtil iu,
+composition.Adapt adapter, composition.RecursiveLoader loader, repositories.posts.PostsRepository, libs.network.http.HTTPUtil httpUtil,
+data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, time.Calendar ic, time.DateUtil du {
+    PostsRepository repo
+    LoadedComponents repoComponents[] = new LoadedComponents[](
+        loader.load("repositories/posts/PostsRepository.o"),
+        loader.load("repositories/posts/PostsRepository.proxy.replicate.strong.o"),
+        loader.load("repositories/posts/PostsRepository.proxy.replicate.weak.o"),
+        loader.load("repositories/posts/PostsRepository.proxy.fragment.strong.o"),
+        loader.load("repositories/posts/PostsRepository.proxy.fragment.weak.o")
+    )
+    String names[] = new String[](
+        new String("PostsRepository"),
+        new String("PostsRepository with strong replication"), 
+        new String("PostsRepository with weak replication"),
+        new String("PostsRepository with strong fragmentation"), 
+        new String("PostsRepository with weak fragmentation")
+    )
+    String remoteNames[] = new String[](
+        new String("post-repository"),
+        new String("post-repository-replicate-strong"),
+        new String("post-repository-replicate-weak"),
+        new String("post-repository-fragment-strong"),
+        new String("post-repository-fragment-weak")
+    )
+    int lastComponentIndex = 0
+    bool serviceStatus = false
+
+        
+    void Destructor:destroy() {
+        serviceStatus = false
+    }
+    
+    void Server:start(int PORT) {
+        TCPServerSocket host = new TCPServerSocket()
+		serviceStatus = true
+
+		if (!host.bind(TCPServerSocket.ANY_ADDRESS, PORT)) {
+			out.println("Error: failed to bind master socket")
+			return
+		}
+
+        initRepo()
+
+		out.println("$debugMSG Server started on port $(iu.makeString(PORT))")
+		while (serviceStatus) {
+			TCPSocket client = new TCPSocket()
+			if (client.accept(host)) asynch::handleRequest(client)
+		}
+    }
+
+    void initRepo() {
+        repo = new PostsRepository() from repoComponents[lastComponentIndex].mainComponent
+    }
+    
+    void Server:handleRequest(store TCPSocket s) {
+        HTTPMessage msg = httpUtil.readHTTPRequest(s)
+        HTTPResponse res = null
+        res = process(msg)
+        if (res != null) sendResponse(msg, res)
+        else sendResponse(msg, build404(msg))
+    }
+
+    HTTPResponse process(HTTPMessage req) {
+        DateTime startExecution = ic.getTime()
+        HTTPResponse res = null
+        
+        char responseContent[] = new char[]()
+        if(req.command == "GET") {
+            if (req.resource == "/") {
+                responseContent = "Hello!"
+                byte responseContentBytes[] = dana.serial(responseContent)
+                res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
+            } else if (req.resource == "/all") {
+                Post allPosts[] = repo.getPosts()
+                responseContent = je.jsonFromArray(allPosts)
+                byte responseContentBytes[] = dana.serial(responseContent)
+                res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
+            } else if (su.startsWith(req.resource, "/feed/")) {
+                String pathInfo[] = su.explode(req.resource, "/") // expected: ["feed", "<userId:number>"]
+                int userId = pathInfo[1].string.intFromString()
+                Post userPosts[]
+                userPosts = repo.getUserFeed(userId)
+                responseContent = je.jsonFromArray(userPosts)
+                byte responseContentBytes[] = dana.serial(responseContent)
+                res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
+            } else if (su.startsWith(req.resource, "/post/")) {
+                String pathInfo[] = su.explode(req.resource, "/") // expected: ["post", "<postId:number>"]
+                int postId = pathInfo[1].string.intFromString()
+                Post post = repo.getPostById(postId)
+                responseContent = je.jsonFromData(post)
+                byte responseContentBytes[] = dana.serial(responseContent)
+                res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
+            }
+        } else if (req.command == "POST") {
+            if (req.resource == "/post") {
+                char body[] = new char[](req.postData)
+                CreatePostDTO createPostDTO = je.jsonToData(body, typeof(CreatePostDTO))
+                Post newPost = new Post(0, createPostDTO.userId, 0, createPostDTO.content, new DateTime())
+                repo.addPost(newPost)
+                byte responseContentBytes[] = dana.serial(responseContent)
+                res = new HTTPResponse(201, "Created", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
+            } else if (su.startsWith(req.resource, "/adapt/")) {
+                String pathInfo[] = su.explode(req.resource, "/") // expected: ["like", "<proxy:number>"]
+                int proxyId = pathInfo[1].string.intFromString()
+                char body[] = new char[](req.postData)
+
+                if(proxyId > 0) {
+                    ah.addAddressesInNamespace(je.jsonToArray(body, typeof(Address[])), remoteNames[proxyId].string)
+                }
+                asynch::changeRepo(proxyId)
+
+                responseContent = "Repository changed to $(names[proxyId].string)"
+                byte responseContentBytes[] = dana.serial(responseContent)
+                res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
+            }
+        }
+        
+        out.println("$debugMSG time to process $(req.command) $(req.resource): $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
+        return res
+    }
+
+    HTTPResponse build404(HTTPMessage request) {
+        return new HTTPResponse(
+            404,
+            "Not Found",
+            HTTPUtil.SERVER_NAME,
+            0,
+            request.mimeType,
+            ""
+        )
+    }
+
+    
+    void sendResponse(HTTPMessage request, HTTPResponse response) {
+        // out.println("$debugMSG - RESPONSE CONTENT")
+        request.socket.send("HTTP/1.1 $(iu.makeString(response.code)) $(response.status)\r\n")
+        // out.print("HTTP/1.1 $(iu.makeString(response.code)) $(response.status)\r\n")
+		request.socket.send("Server: $(response.serverName) \r\n")
+        // out.print("Server: $(response.serverName) \r\n")
+		request.socket.send("Content-Length: $(iu.makeString(response.contentLength))\r\n")
+        // out.print("Content-Length: $(iu.makeString(response.contentLength))\r\n")
+		request.socket.send("Connection: close\r\n")
+        // out.print("Connection: close\r\n")
+		request.socket.send("Content-Type: $(response.contentType)\r\n")
+        // out.print("Content-Type: $(response.contentType)\r\n")
+		request.socket.send("\r\n")
+        // out.print("\r\n")
+		request.socket.send(response.body)
+        // out.println(response.body)
+        // out.println("$debugMSG - END RESPONSE CONTENT")
+    }
+
+    void changeRepo(int option) {
+        out.println("Changing repository to $(names[option].string)")
+        adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.posts.PostsRepository")
+        lastComponentIndex = option
+    }
+}

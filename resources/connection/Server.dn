@@ -1,0 +1,6 @@
+uses net.TCPSocket
+
+interface Server {
+    void start(int PORT)
+    void handleRequest(store TCPSocket s)
+}
