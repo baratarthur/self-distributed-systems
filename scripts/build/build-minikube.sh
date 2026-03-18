@@ -7,4 +7,4 @@ echo "Re-deploying Dana in Minikube..."
 # kubectl delete -f ./dana-kube.yaml
 # echo "dana deleted."
 echo "Re-deploying dana..."
-kubectl apply -f ./manifest.yaml
+kubectl apply -f ./manifest-local.yaml

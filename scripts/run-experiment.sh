@@ -3,12 +3,16 @@
 kubectl delete -f k6-manifest.yaml
 kubectl delete -f k6-manifest-viral.yaml
 echo "App version $1 built."
+source ./scripts/build/build-minikube.sh
+kubectl apply -f database.yaml
+
+
 echo "Starting k6 user load..."
-kubectl apply -f k6-manifest.yaml
-sleep 1m
+# kubectl apply -f k6-manifest.yaml
+# sleep 1m
 echo "Starting k6 viral load..."
-kubectl apply -f k6-manifest-viral.yaml
-sleep 1m
+# kubectl apply -f k6-manifest-viral.yaml
+# sleep 1m
 # echo "Experiment round $1 finished."
 # source ./data-retreive/copy-result.sh $1 30u
 # echo "Copying logs from dana-main"
