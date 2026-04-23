@@ -26,9 +26,9 @@ WORKDIR /app
 # Concede permissão de execução ao executável "dana"
 COPY . .
 
-WORKDIR /app/native_libraries
+# WORKDIR /app/native_libraries
 
-RUN  make mysql_lib
+# RUN  make mysql_lib
 
 WORKDIR /app
 
