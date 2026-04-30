@@ -1,6 +1,6 @@
 const char debugMSG[] = "[@HTTPUtil]"
 
-component provides libs.network.http.HTTPUtil requires io.Output out, data.IntUtil iu, io.FileSystem fileSystem, 
+component provides libs.network.http.HTTPUtil requires data.IntUtil iu, io.FileSystem fileSystem, 
 	data.StringUtil stringUtil {
     
     HTTPMessage HTTPUtil:readHeader(store TCPSocket s) {
@@ -14,9 +14,6 @@ component provides libs.network.http.HTTPUtil requires io.Output out, data.IntUt
             if(len >= 4 &&
                 (command[len-4] == "\r") && (command[len-3] == "\n") && 
 				(command[len-2] == "\r") && (command[len-1] == "\n")) {
-
-                // out.println("$debugMSG - header generated")
-
                 httpHeader = parseHTTPRequest(command)
                 if (httpHeader != null) { httpHeader.rawHeader = command }
                 break
@@ -61,7 +58,6 @@ component provides libs.network.http.HTTPUtil requires io.Output out, data.IntUt
             )
 		}
 		message.socket = header.socket
-		// out.println("$debugMSG - request content length - $(header.contentLength)")
 		if (header.contentLength > 0) {
 			message.postData = new char[](header.socket.recv(header.contentLength))
 		}

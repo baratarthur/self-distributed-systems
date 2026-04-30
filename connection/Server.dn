@@ -14,9 +14,9 @@ data CreatePostDTO {
     char content[]
 }
 
-component provides Server(Destructor) requires net.TCPSocket, net.TCPServerSocket, io.Output out, data.IntUtil iu,
+component provides Server(Destructor) requires net.TCPSocket, net.TCPServerSocket, libs.utils.Logger logger, data.IntUtil iu,
 composition.Adapt adapter, composition.RecursiveLoader loader, repositories.posts.PostsRepository, libs.network.http.HTTPUtil httpUtil,
-data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, time.Calendar ic, time.DateUtil du {
+data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, time.Calendar ic, libs.krabs.LatencyStore ls {
     PostsRepository repo
     LoadedComponents repoComponents[] = new LoadedComponents[](
         loader.load("repositories/posts/PostsRepository.o"),
@@ -52,13 +52,13 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
 		serviceStatus = true
 
 		if (!host.bind(TCPServerSocket.ANY_ADDRESS, PORT)) {
-			out.println("Error: failed to bind master socket")
+			logger.error("Error: failed to bind master socket")
 			return
 		}
 
         initRepo()
 
-		out.println("$debugMSG Server started on port $(iu.makeString(PORT))")
+		logger.info("$debugMSG Server started on port $(iu.makeString(PORT))")
 		while (serviceStatus) {
 			TCPSocket client = new TCPSocket()
 			if (client.accept(host)) asynch::handleRequest(client)
@@ -79,7 +79,7 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
     }
 
     HTTPResponse process(HTTPMessage req) {
-        DateTime startExecution = ic.getTime()
+        DateTime startExecutionTime = ic.getTime()
         HTTPResponse res = null
         
         char responseContent[] = new char[]()
@@ -133,7 +133,9 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
             }
         }
         
-        out.println("$debugMSG time to process $(req.command) $(req.resource): $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
+        int executionTime = ls.getMilisecondsExecutionTimeSince(startExecutionTime)
+        ls.storeExecutionTime(executionTime)
+        logger.info("$debugMSG Process $(req.command) $(req.resource): $(iu.makeString(executionTime)) ms")
         return res
     }
 
@@ -147,29 +149,28 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
             ""
         )
     }
-
     
     void sendResponse(HTTPMessage request, HTTPResponse response) {
-        // out.println("$debugMSG - RESPONSE CONTENT")
+        // logger.info("$debugMSG - RESPONSE CONTENT")
         request.socket.send("HTTP/1.1 $(iu.makeString(response.code)) $(response.status)\r\n")
-        // out.print("HTTP/1.1 $(iu.makeString(response.code)) $(response.status)\r\n")
+        // logger.info("HTTP/1.1 $(iu.makeString(response.code)) $(response.status)\r\n")
 		request.socket.send("Server: $(response.serverName) \r\n")
-        // out.print("Server: $(response.serverName) \r\n")
+        // logger.info("Server: $(response.serverName) \r\n")
 		request.socket.send("Content-Length: $(iu.makeString(response.contentLength))\r\n")
-        // out.print("Content-Length: $(iu.makeString(response.contentLength))\r\n")
+        // logger.info("Content-Length: $(iu.makeString(response.contentLength))\r\n")
 		request.socket.send("Connection: close\r\n")
-        // out.print("Connection: close\r\n")
+        // logger.info("Connection: close\r\n")
 		request.socket.send("Content-Type: $(response.contentType)\r\n")
-        // out.print("Content-Type: $(response.contentType)\r\n")
+        // logger.info("Content-Type: $(response.contentType)\r\n")
 		request.socket.send("\r\n")
-        // out.print("\r\n")
+        // logger.info("\r\n")
 		request.socket.send(response.body)
-        // out.println(response.body)
-        // out.println("$debugMSG - END RESPONSE CONTENT")
+        // logger.info(response.body)
+        // logger.info("$debugMSG - END RESPONSE CONTENT")
     }
 
     void changeRepo(int option) {
-        out.println("Changing repository to $(names[option].string)")
+        logger.info("Changing repository to $(names[option].string)")
         adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.posts.PostsRepository")
         lastComponentIndex = option
     }

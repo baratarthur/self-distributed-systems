@@ -6,7 +6,7 @@ const int PAGINATION_SIZE = 10
 const int WRITING_CACHE_SIZE = 100
 const int CONNECTION_READ_POOL_SIZE = 90
 
-component provides repositories.posts.PostsRepository requires io.Output out, time.DateUtil du, time.Calendar ic, data.IntUtil iu, data.mysql.MySQL {
+component provides repositories.posts.PostsRepository requires time.DateUtil du, time.Calendar ic, data.IntUtil iu, data.mysql.MySQL {
     static bool writingInDb = false
     static Mutex writtingLock = new Mutex()
 
@@ -18,9 +18,7 @@ component provides repositories.posts.PostsRepository requires io.Output out, ti
         mutex(writtingLock) {
             postsWrite = new Post[](postsWrite, newPost) // add to cache
         }
-        out.println("writing post")
         if(postsWrite.arrayLength > WRITING_CACHE_SIZE && !writingInDb) { // simple cache eviction policy
-            out.println("writing in database")
             mutex(writtingLock) {
                 writingInDb = true
                 char query[] = "INSERT INTO posts (userId, content) VALUES "

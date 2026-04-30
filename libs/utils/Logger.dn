@@ -1,0 +1,17 @@
+component provides libs.utils.Logger requires io.Output out {
+    void Logger:info(char message[]) {
+        asynch::print("[INFO] - $message")
+    }
+
+    void Logger:warn(char message[]) {
+        asynch::print("[WARN] - $message")
+    }
+
+    void Logger:error(char message[]) {
+        asynch::print("[ERROR] - $message")
+    }
+
+    void print(char message[]) {
+        out.println(message)
+    }
+}

@@ -5,7 +5,7 @@ data CreatePostDTO {
     char content[]
 }
 
-component provides ws.Web requires repositories.posts.PostsRepository, data.IntUtil iu, io.Output out,
+component provides ws.Web requires repositories.posts.PostsRepository, data.IntUtil iu, libs.utils.Logger logger,
     composition.RecursiveLoader loader, composition.Adapt adapter, io.Input in, time.DateUtil du, data.StringUtil su,
     data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, libs.network.rpc.RPCUtil, time.Calendar ic {
     PostsRepository repo
@@ -35,11 +35,11 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
 
     void Web:setup() {
         repo = new PostsRepository() from repoComponents[lastComponentIndex].mainComponent
-        out.println("Server started on port 8080")
+        logger.info("Server started on port 8080")
     }
 
     void changeRepo(int option) {
-        out.println("Changing repository to $(names[option].string)")
+        logger.info("Changing repository to $(names[option].string)")
         adapter.adaptObject(repoComponents[lastComponentIndex].mainComponent, repo, repoComponents[option].mainComponent, "repositories.posts.PostsRepository")
         lastComponentIndex = option
     }
@@ -81,7 +81,7 @@ component provides ws.Web requires repositories.posts.PostsRepository, data.IntU
             asynch::addPost(payload)
             s.setStatusCode(201, "Created", true)
             s.sendResponse()
-            out.println("Add post time: $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
+            logger.info("Add post time: $(iu.makeString(du.toMilliseconds(du.diff(ic.getTime(), startExecution))))")
             return true
         } else if (su.startsWith(path, "/adapt/")) {
             String pathInfo[] = su.explode(path, "/") // expected: ["like", "<proxy:number>"]

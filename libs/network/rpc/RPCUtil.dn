@@ -2,7 +2,7 @@ uses libs.utils.Constants
 
 const char debugMSG[] = "[@RPCUtil]"
 
-component provides libs.network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, io.Output out,
+component provides libs.network.rpc.RPCUtil requires data.json.JSONEncoder je, net.TCPSocket, libs.utils.Logger logger,
     data.IntUtil iu, data.StringUtil su {
 
     // TCPSocket RPCUtil:connect(Address a) {
@@ -21,7 +21,7 @@ component provides libs.network.rpc.RPCUtil requires data.json.JSONEncoder je, n
                 Constants.SEPARATOR,
                 req.r.content
             )
-            out.println("$debugMSG - raw request - $requestContent")
+            logger.info("$debugMSG - raw request - $requestContent")
         } else {
             requestContent = je.jsonFromArray(req.r.meta)
         }
@@ -57,7 +57,7 @@ component provides libs.network.rpc.RPCUtil requires data.json.JSONEncoder je, n
     
     Request RPCUtil:parseRequestFromString(char requestString[]) {
         Request r = null
-        out.println("$debugMSG - raw request received - $requestString")
+        logger.info("$debugMSG - raw request received - $requestString")
         String json[] = su.explode(requestString, Constants.SEPARATOR)
         Metadata meta[] = je.jsonToArray(json[0].string, typeof(Metadata[]))
 

@@ -1,0 +1,7 @@
+uses time.Calendar
+uses time.DateUtil
+
+interface LatencyStore {
+    int getMilisecondsExecutionTimeSince(DateTime start)
+    void storeExecutionTime(int miliseconds)
+}

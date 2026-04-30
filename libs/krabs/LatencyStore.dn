@@ -1,0 +1,32 @@
+const int MAX_LATENCY_STORE_SIZE = 10
+
+component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateUtil du, libs.krabs.KrabsSettings,
+    net.http.HTTPRequest req, data.IntUtil iu, libs.utils.Logger logger {
+    static int latencyStore[] = new int[]()
+
+    int LatencyStore:getMilisecondsExecutionTimeSince(DateTime start) {
+        DateTime now = ic.getTime()
+        return du.toMilliseconds(du.diff(now, start))
+    }
+
+    void LatencyStore:storeExecutionTime(int miliseconds) {
+        latencyStore = new int[](latencyStore, miliseconds)
+
+        if(latencyStore.arrayLength > MAX_LATENCY_STORE_SIZE) {
+            int avarageLatency = getAverageFromLatencyStore()
+            logger.info("Avarage latency from last $(iu.makeString(MAX_LATENCY_STORE_SIZE)) executions: $(iu.makeString(avarageLatency)) ms")
+            char body[] = "{\"target\": \"social-media-app\", \"type\": \"latency\", \"value\": \"$(iu.makeString(avarageLatency))\"}"
+            Header contentTypeHeader = new Header("Content-Type", "application/json")
+            Header headers[] = new Header[](contentTypeHeader)
+            req.post("http://$(KrabsSettings.HOST):$(KrabsSettings.PORT)/telemetry", headers, body)
+        }
+    }
+
+    int getAverageFromLatencyStore() {
+        int total = 0
+        for (int i = 0; i < latencyStore.arrayLength; i++) {
+            total += latencyStore[i]
+        }
+        return total / latencyStore.arrayLength
+    }
+}

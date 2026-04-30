@@ -3,7 +3,7 @@ uses libs.utils.Constants
 const char debugMSG[] = "[@Remote]"
 
 
-component provides remotes.Remote:postsrepository requires net.TCPSocket, net.TCPServerSocket, io.Output out, data.IntUtil iu, data.json.JSONEncoder je, time.Timer timer, libs.network.rpc.RPCUtil connection, repositories.posts.PostsRepository remoteComponent {
+component provides remotes.Remote:postsrepository requires net.TCPSocket, net.TCPServerSocket, libs.utils.Logger logger, data.IntUtil iu, data.json.JSONEncoder je, time.Timer timer, libs.network.rpc.RPCUtil connection, repositories.posts.PostsRepository remoteComponent {
 	bool serviceStatus = false
 	
 
@@ -13,11 +13,11 @@ component provides remotes.Remote:postsrepository requires net.TCPSocket, net.TC
 		
 
 		if (!host.bind(TCPServerSocket.ANY_ADDRESS, PORT)) {
-			out.println("Error: failed to bind master socket")
+			logger.error("Error: failed to bind master socket")
 			return
 		}
 
-		out.println("$debugMSG - Server started on port $(iu.makeString(PORT))")
+		logger.info("$debugMSG - Server started on port $(iu.makeString(PORT))")
 		while (serviceStatus) {
 			TCPSocket client = new TCPSocket()
 			if (client.accept(host)) asynch::handleRequest(client)

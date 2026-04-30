@@ -1,0 +1,5 @@
+interface Logger {
+    void info(char message[])
+    void warn(char message[])
+    void error(char message[])
+}
