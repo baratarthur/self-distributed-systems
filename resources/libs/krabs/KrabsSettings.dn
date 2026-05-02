@@ -1,4 +1,4 @@
-interface libs.krabs.KrabsSettings {
+interface KrabsSettings {
     const char APP_NAME[] = "social-media-app"
     const char HOST[] = "192.168.5.27"
     const char PORT[] = "30002"

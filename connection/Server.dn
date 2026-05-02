@@ -70,16 +70,19 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
     }
     
     void Server:handleRequest(store TCPSocket s) {
+        DateTime startExecutionTime = ic.getTime()
         HTTPMessage msg = httpUtil.readHTTPRequest(s)
         HTTPResponse res = null
         res = process(msg)
         if (res != null) sendResponse(msg, res)
         else sendResponse(msg, build404(msg))
+        int executionTime = ls.getMilisecondsExecutionTimeSince(startExecutionTime)
+        ls.storeExecutionTime(executionTime)
+        logger.info("$debugMSG Process $(msg.command) $(msg.resource): $(iu.makeString(executionTime)) ms")
         s.disconnect()
     }
 
     HTTPResponse process(HTTPMessage req) {
-        DateTime startExecutionTime = ic.getTime()
         HTTPResponse res = null
         
         char responseContent[] = new char[]()
@@ -132,10 +135,6 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
                 res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
             }
         }
-        
-        int executionTime = ls.getMilisecondsExecutionTimeSince(startExecutionTime)
-        ls.storeExecutionTime(executionTime)
-        logger.info("$debugMSG Process $(req.command) $(req.resource): $(iu.makeString(executionTime)) ms")
         return res
     }
 
