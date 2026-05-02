@@ -27,6 +27,8 @@ component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateU
             body = new char[](body, "\"type\": \"latency\",")
             body = new char[](body, "\"value\": \"$(iu.makeString(avarageLatency))\"")
             body = new char[](body, "}")
+            logger.info("Sending latency data to Krabs: $body")
+            logger.info("Krabs endpoint: http://$KRABS_HOST:$KRABS_PORT/telemetry")
             Header headers[] = new Header[](new Header("Content-Type", "application/json"))
             req.post("http://$KRABS_HOST:$KRABS_PORT/telemetry", headers, body)
             latencyStore = new int[]()
