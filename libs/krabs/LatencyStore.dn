@@ -16,6 +16,8 @@ component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateU
 
     void LatencyStore:storeExecutionTime(int miliseconds) {
         latencyStore = new int[](latencyStore, miliseconds)
+        logger.info("Execution time stored: $(iu.makeString(miliseconds)) ms")
+        logger.info("Store size: $(iu.makeString(latencyStore.arrayLength))")
 
         if(latencyStore.arrayLength > MAX_LATENCY_STORE_SIZE) {
             int avarageLatency = getAverageFromLatencyStore()
