@@ -1,9 +1,7 @@
-uses libs.krabs.KrabsSettings
-
 const int MAX_LATENCY_STORE_SIZE = 10
-const char APPLICATION_NAME[] = KrabsSettings.APP_NAME
-const char KRABS_HOST[] = KrabsSettings.HOST
-const char KRABS_PORT[] = KrabsSettings.PORT
+const char APP_NAME[] = "social-media-app"
+const char HOST[] = "192.168.5.27"
+const char PORT[] = "30002"
 
 component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateUtil du,
     net.http.HTTPRequest req, data.IntUtil iu, libs.utils.Logger logger {
@@ -23,14 +21,14 @@ component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateU
             int avarageLatency = getAverageFromLatencyStore()
             logger.info("Avarage latency from last $(iu.makeString(MAX_LATENCY_STORE_SIZE)) executions: $(iu.makeString(avarageLatency)) ms")
             char body[] = "{"
-            body = new char[](body, "\"target\": \"$APPLICATION_NAME\",")
+            body = new char[](body, "\"target\": \"$APP_NAME\",")
             body = new char[](body, "\"type\": \"latency\",")
             body = new char[](body, "\"value\": \"$(iu.makeString(avarageLatency))\"")
             body = new char[](body, "}")
             logger.info("Sending latency data to Krabs: $body")
-            logger.info("Krabs endpoint: http://$KRABS_HOST:$KRABS_PORT/telemetry")
+            logger.info("Krabs endpoint: http://$HOST:$PORT/telemetry")
             Header headers[] = new Header[](new Header("Content-Type", "application/json"))
-            req.post("http://$KRABS_HOST:$KRABS_PORT/telemetry", headers, body)
+            req.post("http://$HOST:$PORT/telemetry", headers, body)
             latencyStore = new int[]()
         }
     }
