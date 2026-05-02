@@ -1,9 +1,9 @@
 uses libs.krabs.KrabsSettings
 
 const int MAX_LATENCY_STORE_SIZE = 10
-const char APPLICATION_NAME = KrabsSettings.APP_NAME
-const char KRABS_HOST = KrabsSettings.HOST
-const char KRABS_PORT = KrabsSettings.PORT
+const char APPLICATION_NAME[] = KrabsSettings.APP_NAME
+const char KRABS_HOST[] = KrabsSettings.HOST
+const char KRABS_PORT[] = KrabsSettings.PORT
 
 component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateUtil du,
     net.http.HTTPRequest req, data.IntUtil iu, libs.utils.Logger logger {
