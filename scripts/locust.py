@@ -1,5 +1,24 @@
 import random
-from locust import FastHttpUser, task, constant_throughput, tag
+from locust import FastHttpUser, task, constant_throughput, tag, LoadTestShape
+
+class StepLoadShape(LoadTestShape):
+    stages = [
+        {"duration": 30, "users": 10, "spawn_rate": 5},
+        {"duration": 30, "users": 25, "spawn_rate": 5},
+        {"duration": 30, "users": 50, "spawn_rate": 5},
+        {"duration": 30, "users": 100, "spawn_rate": 5},
+        {"duration": 30, "users": 50, "spawn_rate": 5},
+        {"duration": 30, "users": 25, "spawn_rate": 5},
+        {"duration": 90, "users": 10, "spawn_rate": 5},
+    ]
+
+    def tick(self):
+        run_time = self.get_run_time()
+        for stage in self.stages:
+            if run_time < stage["duration"]:
+                return (stage["users"], stage["spawn_rate"])
+        return None
+
 
 class SocialMediaUser(FastHttpUser):
     # Fix: constant_throughput(1) results in 1 req/sec. 
