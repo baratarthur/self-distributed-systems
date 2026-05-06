@@ -4,12 +4,14 @@ from locust import FastHttpUser, task, constant_throughput, tag, LoadTestShape
 class StepLoadShape(LoadTestShape):
     stages = [
         {"duration": 20, "users": 10, "spawn_rate": 5},
-        {"duration": 40, "users": 25, "spawn_rate": 5},
+        {"duration": 40, "users": 50, "spawn_rate": 5},
         {"duration": 60, "users": 50, "spawn_rate": 5},
         {"duration": 80, "users": 100, "spawn_rate": 5},
-        {"duration": 100, "users": 50, "spawn_rate": 5},
-        {"duration": 120, "users": 25, "spawn_rate": 5},
-        {"duration": 140, "users": 10, "spawn_rate": 5},
+        {"duration": 100, "users": 100, "spawn_rate": 5},
+        {"duration": 120, "users": 100, "spawn_rate": 5},
+        {"duration": 140, "users": 100, "spawn_rate": 5},
+        {"duration": 160, "users": 100, "spawn_rate": 5},
+        {"duration": 180, "users": 100, "spawn_rate": 5},
     ]
 
     def tick(self):
