@@ -1,75 +1,58 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import datetime
 
-def gerar_graficos(csv_path='load_test.csv'):
-    # 1. Carregamento com tratamento aprimorado
-    try:
-        # low_memory=False evita avisos se o CSV do k6 for muito grande e tiver tipos mistos
-        df = pd.read_csv(csv_path, low_memory=False)
-    except FileNotFoundError:
-        print(f"Erro: O arquivo '{csv_path}' não foi encontrado. Verifique o caminho.")
-        return
+# 1. Carregar os dados
+# Substitua 'seu_arquivo_stats_history.csv' pelo nome do seu arquivo
+file_path = 'locust_test_limited_monolith_stats_history.csv'
 
-    print("Processando e agregando os dados do k6...")
+# Lendo o CSV e tratando valores 'N/A' como NaN
+df = pd.read_csv(file_path, na_values=['N/A'])
+df = df.fillna(0)
 
-    # Converter timestamp e remover linhas inválidas de forma segura
-    df['timestamp'] = pd.to_numeric(df['timestamp'], errors='coerce')
-    df.dropna(subset=['timestamp', 'metric_name', 'metric_value'], inplace=True)
+# 2. Pré-processamento
+# Converter Timestamp Unix para formato de hora legível
+df['Time'] = df['Timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x))
+# Normalizar o tempo para começar em 0 segundos
+start_time = df['Time'].min()
+df['Elapsed'] = (df['Time'] - start_time).dt.total_seconds()
 
-    # 2. Normalizar o tempo para "segundo de teste" (começando do 0)
-    df['segundo_de_teste'] = (df['timestamp'] - df['timestamp'].min()).astype(int)
+# 3. Criar a visualização
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 15), sharex=True)
+plt.subplots_adjust(hspace=0.3)
 
-    # 3. Filtrar e agregar os dados
-    df_reqs = df[df['metric_name'] == 'http_reqs']
-    df_lat = df[df['metric_name'] == 'http_req_duration']
+# --- Gráfico 1: Usuários e Throughput (RPS) ---
+ax1.set_title('Carga vs Throughput', fontsize=14, fontweight='bold')
+ax1.plot(df['Elapsed'], df['User Count'], color='tab:blue', label='User Count', linewidth=2)
+ax1.set_ylabel('Users', color='tab:blue', fontsize=12)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
 
-    # Usando os índices no agrupamento para um merge mais rápido e limpo depois
-    reqs_por_segundo = df_reqs.groupby('segundo_de_teste')['metric_value'].sum().rename('requisicoes')
-    lat_por_segundo = df_lat.groupby('segundo_de_teste')['metric_value'].mean().rename('latencia')
+ax1_2 = ax1.twinx()
+ax1_2.plot(df['Elapsed'], df['Requests/s'], color='tab:green', label='Requests/s', linestyle='--')
+ax1_2.set_ylabel('Requests/s', color='tab:green', fontsize=12)
+ax1_2.tick_params(axis='y', labelcolor='tab:green')
+ax1.grid(True, which='both', linestyle='--', alpha=0.5)
 
-    # Calcular o Percentil 95 (P95) geral da latência para referência
-    p95_latencia = df_lat['metric_value'].quantile(0.95) if not df_lat.empty else 0
+# --- Gráfico 2: Tempos de Resposta (Percentis) ---
+ax2.set_title('Latência (Percentis)', fontsize=14, fontweight='bold')
+ax2.plot(df['Elapsed'], df['50%'], label='Mediana (50%)', color='green')
+ax2.plot(df['Elapsed'], df['95%'], label='P95', color='orange')
+ax2.plot(df['Elapsed'], df['99%'], label='P99', color='red')
+ax2.set_ylabel('Response Time (ms)', fontsize=12)
+ax2.legend(loc='upper left')
+ax2.grid(True, linestyle='--', alpha=0.5)
 
-    # Mesclar dados garantindo que todos os segundos estejam representados
-    df_final = pd.merge(reqs_por_segundo, lat_por_segundo, left_index=True, right_index=True, how='outer').fillna(0)
-    df_final.reset_index(inplace=True)
+# --- Gráfico 3: Falhas por Segundo ---
+ax3.set_title('Falhas por Segundo', fontsize=14, fontweight='bold')
+ax3.fill_between(df['Elapsed'], df['Failures/s'], color='tab:red', alpha=0.3)
+ax3.plot(df['Elapsed'], df['Failures/s'], color='tab:red', label='Failures/s')
+ax3.set_ylabel('Failures/s', fontsize=12)
+ax3.set_xlabel('Tempo decorrido (segundos)', fontsize=12)
+ax3.grid(True, linestyle='--', alpha=0.5)
 
-    x = df_final['segundo_de_teste']
-    y_req = df_final['requisicoes']
-    y_lat = df_final['latencia']
-
-    # 4. Configurar a figura
-    # O sharex=True alinha os dois gráficos horizontalmente
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
-
-    # --- Primeiro Gráfico: Linha (RPS) ---
-    ax1.plot(x, y_req, color='#1f77b4', linewidth=2, marker='o', markersize=4, label='RPS')
-    ax1.set_title('Volume de Requisições por Segundo', fontsize=14, fontweight='bold')
-    ax1.set_ylabel('Requisições (RPS)', fontsize=12)
-    ax1.grid(True, linestyle='--', alpha=0.7)
-    ax1.legend(loc='upper right')
-
-    # --- Segundo Gráfico: Pistão (Latência Média) ---
-    # Correção: O gráfico de pistão real exige o uso do stem()
-    markerlines, stemlines, baseline = ax2.stem(x, y_lat, basefmt=" ")
-    
-    # Estilizando o pistão
-    plt.setp(stemlines, 'linewidth', 1.5, 'color', '#ff7f0e', alpha=0.8)
-    plt.setp(markerlines, 'markersize', 5, 'color', '#d62728', 'marker', 's')
-    
-    # Adicionando a linha do P95 para enriquecer a análise
-    if p95_latencia > 0:
-        ax2.axhline(y=p95_latencia, color='purple', linestyle='--', alpha=0.7, label=f'P95 Geral: {p95_latencia:.2f}ms')
-        ax2.legend(loc='upper right')
-
-    ax2.set_title('Latência Média por Segundo', fontsize=14, fontweight='bold')
-    ax2.set_xlabel('Tempo de Teste (segundos)', fontsize=12)
-    ax2.set_ylabel('Latência Média (ms)', fontsize=12)
-    ax2.grid(True, linestyle='--', alpha=0.7)
-
-    # Ajustar layout e exibir
-    plt.tight_layout()
-    plt.show()
-
-if __name__ == "__main__":
-    gerar_graficos('load_test.csv')
+# Finalizar e salvar
+plt.tight_layout()
+output_filename = 'resultado_teste_locust.png'
+plt.savefig(output_filename, dpi=300)
+print(f"Gráfico gerado com sucesso: {output_filename}")
+plt.show()
