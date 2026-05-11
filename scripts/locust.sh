@@ -1,1 +1,0 @@
-locust -f scripts/locust.py --headless -H http://192.168.5.20:30080 --csv=$1
