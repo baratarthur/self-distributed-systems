@@ -5,7 +5,8 @@ const char PORT[] = "30002"
 
 component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateUtil du,
     net.http.HTTPRequest req, data.IntUtil iu, libs.utils.Logger logger {
-    static int latencyStore[] = new int[]()
+    static dec latencyAvarage = 0.0
+    const dec ALPHA = 0.125
 
     int LatencyStore:getMilisecondsExecutionTimeSince(DateTime start) {
         DateTime now = ic.getTime()
@@ -13,31 +14,12 @@ component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateU
     }
 
     void LatencyStore:storeExecutionTime(int miliseconds) {
-        latencyStore = new int[](latencyStore, miliseconds)
+        latencyAvarage = (latencyAvarage * (1 - ALPHA)) + (miliseconds * ALPHA)
         logger.info("Execution time stored: $(iu.makeString(miliseconds)) ms")
-        logger.info("Store size: $(iu.makeString(latencyStore.arrayLength))")
-
-        if(latencyStore.arrayLength > MAX_LATENCY_STORE_SIZE) {
-            int avarageLatency = getAverageFromLatencyStore()
-            logger.info("Avarage latency from last $(iu.makeString(MAX_LATENCY_STORE_SIZE)) executions: $(iu.makeString(avarageLatency)) ms")
-            char body[] = "{"
-            body = new char[](body, "\"target\": \"$APP_NAME\",")
-            body = new char[](body, "\"type\": \"latency\",")
-            body = new char[](body, "\"value\": \"$(iu.makeString(avarageLatency))\"")
-            body = new char[](body, "}")
-            logger.info("Sending latency data to Krabs: $body")
-            logger.info("Krabs endpoint: http://$HOST:$PORT/telemetry")
-            Header headers[] = new Header[](new Header("Content-Type", "application/json"))
-            req.post("http://$HOST:$PORT/telemetry", headers, body)
-            latencyStore = new int[]()
-        }
+        logger.info("Latency average: $(iu.makeString(latencyAvarage)) ms")
     }
 
-    int getAverageFromLatencyStore() {
-        int total = 0
-        for (int i = 0; i < latencyStore.arrayLength; i++) {
-            total += latencyStore[i]
-        }
-        return total / latencyStore.arrayLength
+    dec LatencyStore:getCurrentAverageLatency() {
+        return latencyAvarage
     }
 }

@@ -14,6 +14,11 @@ data CreatePostDTO {
     char content[]
 }
 
+data LatencyCheckDTO {
+    char endpoint[]
+    dec latency
+}
+
 component provides Server(Destructor) requires net.TCPSocket, net.TCPServerSocket, libs.utils.Logger logger, data.IntUtil iu,
 composition.Adapt adapter, composition.RecursiveLoader loader, repositories.posts.PostsRepository, libs.network.http.HTTPUtil httpUtil,
 data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah, time.Calendar ic, libs.krabs.LatencyStore ls {
@@ -109,6 +114,12 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
                 int postId = pathInfo[1].string.intFromString()
                 Post post = repo.getPostById(postId)
                 responseContent = je.jsonFromData(post)
+                byte responseContentBytes[] = dana.serial(responseContent)
+                res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
+            }
+            else if (req.resource == "/current-latency") {
+                LatencyCheckDTO latencyCheckDTO = new LatencyCheckDTO("/current-latency", ls.getCurrentAverageLatency())
+                responseContent = je.jsonFromData(latencyCheckDTO)
                 byte responseContentBytes[] = dana.serial(responseContent)
                 res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
             }

@@ -3,5 +3,6 @@ uses time.DateUtil
 
 interface LatencyStore {
     int getMilisecondsExecutionTimeSince(DateTime start)
+    dec getCurrentAverageLatency()
     void storeExecutionTime(int miliseconds)
 }
