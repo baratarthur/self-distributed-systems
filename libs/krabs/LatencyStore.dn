@@ -5,7 +5,7 @@ const char PORT[] = "30002"
 
 component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateUtil du,
     net.http.HTTPRequest req, data.IntUtil iu, libs.utils.Logger logger {
-    static dec latencyAvarage = 0.0
+    dec latencyAvarage = 0.0
     const dec ALPHA = 0.7
 
     int LatencyStore:getMilisecondsExecutionTimeSince(DateTime start) {
