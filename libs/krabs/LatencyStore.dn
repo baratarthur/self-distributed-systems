@@ -14,9 +14,11 @@ component provides libs.krabs.LatencyStore requires time.Calendar ic, time.DateU
     }
 
     void LatencyStore:storeExecutionTime(int miliseconds) {
-        latencyAvarage = (latencyAvarage * (1 - ALPHA)) + (miliseconds * ALPHA)
-        logger.info("Checksum: $(iu.makeString(latencyAvarage * (1 - ALPHA))) ms")
-        logger.info("Checksum: $(iu.makeString(miliseconds * ALPHA)) ms")
+        dec history_latency = latencyAvarage * (1 - ALPHA)
+        dec current_latency = miliseconds * ALPHA
+        latencyAvarage = history_latency + current_latency
+        logger.info("Checksum history: $(iu.makeString(history_latency)) ms")
+        logger.info("Checksum current: $(iu.makeString(current_latency)) ms")
         logger.info("Execution time stored: $(iu.makeString(miliseconds)) ms")
         logger.info("Latency average: $(iu.makeString(latencyAvarage)) ms")
     }
