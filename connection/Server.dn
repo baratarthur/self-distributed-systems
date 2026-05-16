@@ -15,7 +15,6 @@ data CreatePostDTO {
 }
 
 data LatencyCheckDTO {
-    char endpoint[]
     dec latency
 }
 
@@ -118,7 +117,7 @@ data.StringUtil su, data.json.JSONEncoder je, libs.adaptation.AddressHandler ah,
                 res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
             }
             else if (req.resource == "/current-latency") {
-                LatencyCheckDTO latencyCheckDTO = new LatencyCheckDTO("/current-latency", ls.getCurrentAverageLatency())
+                LatencyCheckDTO latencyCheckDTO = new LatencyCheckDTO(ls.getCurrentAverageLatency())
                 responseContent = je.jsonFromData(latencyCheckDTO)
                 byte responseContentBytes[] = dana.serial(responseContent)
                 res = new HTTPResponse(200, "Accepted", HTTPUtil.SERVER_NAME, responseContentBytes.arrayLength, req.mimeType, responseContent)
